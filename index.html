@@ -922,8 +922,14 @@
       scoreLabel.textContent = `${score} richtig`;
       progressTrack.setAttribute("aria-valuenow", String(currentQuestion + 1));
       progressFill.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
-      nextButton.disabled = false;
       updateJokerControls();
+
+      if (!isCorrect) {
+        showGameOver();
+        return;
+      }
+
+      nextButton.disabled = false;
       nextButton.focus();
     }
 
@@ -952,6 +958,16 @@
         title.textContent = "Ein guter Anfang!";
         copy.textContent = "Einige Rassen sehen sich ganz schön ähnlich. Spiel gern noch einmal und achte auf Fell, Körperform und Ohren.";
       }
+      title.focus({ preventScroll: true });
+    }
+
+    function showGameOver() {
+      quizView.hidden = true;
+      resultView.hidden = false;
+      document.querySelector("#result-score").textContent = `${score}/${questions.length}`;
+      const title = document.querySelector("#result-title");
+      title.textContent = "Spiel vorbei";
+      document.querySelector("#result-copy").textContent = `Frage ${currentQuestion + 1} war leider falsch. Starte neu und versuche es noch einmal.`;
       title.focus({ preventScroll: true });
     }
 
