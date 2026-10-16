@@ -266,34 +266,30 @@
       font-size: 12px;
     }
 
-    .quiz-note, .qr-share { display: flex; align-items: center; }
+    .quiz-note { display: flex; align-items: center; }
     .quiz-note { gap: 10px; }
 
-    .qr-share {
-      gap: 8px;
-      max-width: 168px;
-      color: #f1f5e9;
-      font-size: 11px;
-      font-weight: 600;
-      line-height: 1.35;
-      text-decoration: none;
-    }
-
-    .qr-share:focus-visible {
-      outline: 3px solid var(--lime);
-      outline-offset: 4px;
-    }
+    .topbar-qr { display: block; width: 64px; height: 64px; flex: none; border-radius: 6px; }
+    .topbar-qr:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
 
     .qr-code {
       display: block;
-      width: 88px;
-      height: 88px;
+      width: 60px;
+      height: 60px;
       flex: none;
       padding: 4px;
       border: 1px solid #d5dfcf;
       border-radius: 6px;
       background: white;
     }
+
+    .start-view { display: flex; flex: 1; flex-direction: column; justify-content: center; }
+    .start-view h2 { margin-bottom: 8px; }
+    .start-copy { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .start-form { max-width: 420px; }
+    .start-form label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; }
+    .start-form .score-entry { grid-template-columns: minmax(0, 1fr) auto; }
+    .score-player { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
 
     .note-dot {
       width: 8px;
@@ -608,6 +604,8 @@
       }
 
       .topbar { flex: none; margin-bottom: 8px; }
+      .topbar-qr { width: 48px; height: 48px; }
+      .topbar-qr .qr-code { width: 48px; height: 48px; }
       main {
         min-height: 0;
         flex: 1;
@@ -677,6 +675,9 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Pfotenwissen</span></div>
       <span class="level-tag">Für Anfänger</span>
+      <a class="topbar-qr" id="quiz-qr-link" href="https://hund-code.github.io/hundquiz/" target="_blank" rel="noopener" aria-label="Quiz auf dem Handy öffnen, QR-Code scannen" title="QR-Code zum Quiz">
+        <img class="qr-code" id="quiz-qr-code" alt="QR-Code zum öffentlichen Hundequiz" width="220" height="220">
+      </a>
     </header>
 
     <main>
@@ -689,17 +690,23 @@
             <span class="photo-status" id="photo-status" role="status">Foto wird geladen …</span>
           </button>
         </div>
-        <div class="intro-note">
-          <span class="quiz-note"><span class="note-dot" aria-hidden="true"></span>100 Rassen · ohne Zeitdruck · mit Tipps</span>
-          <a class="qr-share" id="quiz-qr-link" href="https://hund-code.github.io/hundquiz/" target="_blank" rel="noopener">
-            <img class="qr-code" id="quiz-qr-code" alt="QR-Code zum öffentlichen Hundequiz" width="220" height="220">
-            <span>Mit dem Handy scannen und spielen</span>
-          </a>
-        </div>
+        <p class="intro-note"><span class="quiz-note"><span class="note-dot" aria-hidden="true"></span>100 Rassen · ohne Zeitdruck · mit Tipps</span></p>
       </section>
 
       <section class="quiz-area" aria-label="Hundequiz">
-        <div id="quiz-view">
+        <section class="start-view" id="start-view" aria-labelledby="start-title">
+          <p class="question-count">Willkommen</p>
+          <h2 id="start-title">Rassen erraten</h2>
+          <p class="start-copy">Gib deinen Nickname ein, um zu starten und später deinen Punktestand in der Rangliste einzutragen.</p>
+          <form class="start-form" id="start-form">
+            <label for="nickname">Dein Nickname (2 bis 16 Zeichen, öffentlich sichtbar)</label>
+            <div class="score-entry">
+              <input class="nickname-input" id="nickname" name="nickname" type="text" minlength="2" maxlength="16" autocomplete="nickname" placeholder="Dein Nickname" required>
+              <button class="score-submit" type="submit">Quiz starten</button>
+            </div>
+          </form>
+        </section>
+        <div id="quiz-view" hidden>
           <div class="quiz-topline">
             <span id="progress-label">Frage 1 von 100</span>
             <div class="quiz-status">
@@ -729,14 +736,11 @@
           <div class="result-score" id="result-score" aria-label="Ergebnis"></div>
           <h2 id="result-title" tabindex="-1"></h2>
           <p class="result-copy" id="result-copy"></p>
+          <p class="score-player">Eintrag als <strong id="leaderboard-player"></strong></p>
           <section class="leaderboard" aria-labelledby="leaderboard-title">
             <h3 id="leaderboard-title">Top 10 weltweit</h3>
             <form class="score-form" id="score-form">
-              <label for="nickname">Nickname (öffentlich sichtbar)</label>
-              <div class="score-entry">
-                <input class="nickname-input" id="nickname" name="nickname" type="text" minlength="2" maxlength="16" autocomplete="nickname" placeholder="Dein Nickname" required>
-                <button class="score-submit" id="score-submit" type="submit" disabled>Punktzahl eintragen</button>
-              </div>
+              <button class="score-submit" id="score-submit" type="submit" disabled>Punktzahl eintragen</button>
             </form>
             <p class="leaderboard-status" id="leaderboard-status" role="status" aria-live="polite"></p>
             <div class="leaderboard-table-wrap">
@@ -872,9 +876,21 @@
       return shuffled;
     }
 
+    const beginnerBreedPaths = new Set([
+      "labrador", "retriever/golden", "dachshund", "beagle", "poodle/standard",
+      "chihuahua", "pug", "husky", "boxer", "rottweiler", "german/shepherd",
+      "collie/border", "bulldog/french", "pembroke", "dalmatian", "samoyed",
+      "maltese", "shiba", "pomeranian", "doberman"
+    ]);
+    const beginnerBreeds = breedCatalog.filter(breed => beginnerBreedPaths.has(breed.path));
+
     function createQuestions() {
-      return shuffle(breedCatalog).map(breed => {
-        const otherBreeds = shuffle(breedCatalog.filter(candidate => candidate !== breed)).slice(0, 3);
+      const orderedBreeds = [
+        ...shuffle(beginnerBreeds),
+        ...shuffle(breedCatalog.filter(breed => !beginnerBreedPaths.has(breed.path)))
+      ];
+      return orderedBreeds.map(breed => {
+        const otherBreeds = shuffle(beginnerBreeds.filter(candidate => candidate !== breed)).slice(0, 3);
         const options = shuffle([breed, ...otherBreeds]);
         return {
           breed: breed.name,
@@ -890,7 +906,11 @@
     let questions = createQuestions();
 
     const quizView = document.querySelector("#quiz-view");
+    const startView = document.querySelector("#start-view");
+    const startForm = document.querySelector("#start-form");
+    const nicknameInput = document.querySelector("#nickname");
     const resultView = document.querySelector("#result-view");
+    const leaderboardPlayer = document.querySelector("#leaderboard-player");
     const progressLabel = document.querySelector("#progress-label");
     const scoreLabel = document.querySelector("#score-label");
     const progressTrack = document.querySelector(".progress-track");
@@ -909,7 +929,6 @@
     const nextButton = document.querySelector("#next-button");
     const jokerRemaining = document.querySelector("#joker-remaining");
     const scoreForm = document.querySelector("#score-form");
-    const nicknameInput = document.querySelector("#nickname");
     const scoreSubmit = document.querySelector("#score-submit");
     const leaderboardRows = document.querySelector("#leaderboard-rows");
     const leaderboardStatus = document.querySelector("#leaderboard-status");
@@ -919,9 +938,35 @@
     let score = 0;
     let answered = false;
     let photoLoaded = false;
+    let playerNickname = "";
     const jokerUsesRemaining = { half: 2, hint: 2, skip: 2, retry: 2 };
     let extraTryArmed = false;
     const usedJokersThisQuestion = new Set();
+
+    startForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const nickname = nicknameInput.value.trim().replace(/\s+/g, " ");
+      if (nickname.length < 2 || nickname.length > 16) {
+        nicknameInput.setCustomValidity("Bitte gib einen Nickname mit 2 bis 16 Zeichen ein.");
+        nicknameInput.reportValidity();
+        return;
+      }
+      nicknameInput.setCustomValidity("");
+      playerNickname = nickname;
+      leaderboardPlayer.textContent = playerNickname;
+      startView.hidden = true;
+      resultView.hidden = true;
+      quizView.hidden = false;
+      currentQuestion = 0;
+      score = 0;
+      Object.keys(jokerUsesRemaining).forEach(type => { jokerUsesRemaining[type] = 2; });
+      extraTryArmed = false;
+      usedJokersThisQuestion.clear();
+      questions = createQuestions();
+      imageCache.clear();
+      updateJokerControls();
+      renderQuestion();
+    });
 
     function hasLeaderboardConfig() {
       return typeof leaderboardConfig.url === "string"
@@ -978,13 +1023,6 @@
         return;
       }
 
-      const nickname = nicknameInput.value.trim().replace(/\s+/g, " ");
-      if (nickname.length < 2 || nickname.length > 16) {
-        nicknameInput.setCustomValidity("Bitte gib einen Nickname mit 2 bis 16 Zeichen ein.");
-        nicknameInput.reportValidity();
-        return;
-      }
-      nicknameInput.setCustomValidity("");
       scoreSubmit.disabled = true;
       leaderboardStatus.textContent = "Punktzahl wird eingetragen …";
       try {
@@ -995,10 +1033,9 @@
             "Content-Type": "application/json",
             Prefer: "return=minimal"
           },
-          body: JSON.stringify({ nickname, score })
+          body: JSON.stringify({ nickname: playerNickname, score })
         });
         if (!response.ok) throw new Error("Punktzahl konnte nicht gespeichert werden");
-        scoreForm.reset();
         leaderboardStatus.textContent = "Punktzahl eingetragen.";
         await loadLeaderboard();
       } catch {
@@ -1010,6 +1047,13 @@
     const publicQuizUrl = "https://hund-code.github.io/hundquiz/";
     quizQrLink.href = publicQuizUrl;
     quizQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(publicQuizUrl)}`;
+
+    scoreForm.addEventListener("submit", event => {
+      if (!playerNickname) {
+        event.preventDefault();
+        leaderboardStatus.textContent = "Bitte starte das Quiz zuerst mit einem Nickname.";
+      }
+    }, { capture: true });
 
     photoTrigger.addEventListener("click", () => {
       fullscreenPhoto.src = dogPhoto.currentSrc || dogPhoto.src;
@@ -1242,12 +1286,14 @@
       questions = createQuestions();
       imageCache.clear();
       resultView.hidden = true;
-      quizView.hidden = false;
+      quizView.hidden = true;
+      startView.hidden = false;
+      nicknameInput.value = playerNickname;
       updateJokerControls();
-      renderQuestion();
+      nicknameInput.focus({ preventScroll: true });
     });
 
-    renderQuestion();
+    loadQuestionImage(questions[0], 0);
   </script>
 </body>
 </html>
