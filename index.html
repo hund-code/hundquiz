@@ -153,6 +153,7 @@
     }
 
     .photo-trigger {
+      position: relative;
       display: block;
       width: 100%;
       margin-top: 16px;
@@ -163,6 +164,19 @@
       background: transparent;
       line-height: 0;
       cursor: zoom-in;
+    }
+
+    .photo-trigger:disabled { cursor: wait; }
+
+    .photo-status {
+      position: absolute;
+      inset: 5px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--green);
+      font-size: 14px;
+      line-height: 1.4;
     }
 
     .photo-trigger:focus-visible {
@@ -509,19 +523,20 @@
           <p class="eyebrow">Das Rassen-Rätsel</p>
           <h1 class="visually-hidden" id="page-title">Hunderassen-Quiz</h1>
           <button class="photo-trigger" id="photo-trigger" type="button" aria-label="Hundefoto in Vollbild anzeigen">
-            <img class="dog-photo" id="dog-photo" src="https://images.dog.ceo/breeds/retriever-golden/20200814_113907_200814.jpg" alt="Hund der aktuellen Quizfrage" width="1000" height="700">
+            <img class="dog-photo" id="dog-photo" alt="Hund der aktuellen Quizfrage" width="1000" height="700">
+            <span class="photo-status" id="photo-status" role="status">Foto wird geladen …</span>
           </button>
         </div>
-        <p class="intro-note"><span class="note-dot" aria-hidden="true"></span>8 Rassen · ohne Zeitdruck · mit Tipps</p>
+        <p class="intro-note"><span class="note-dot" aria-hidden="true"></span>100 Rassen · ohne Zeitdruck · mit Tipps</p>
       </section>
 
       <section class="quiz-area" aria-label="Hundequiz">
         <div id="quiz-view">
           <div class="quiz-topline">
-            <span id="progress-label">Frage 1 von 8</span>
+            <span id="progress-label">Frage 1 von 100</span>
             <span class="score-chip" id="score-label">0 richtig</span>
           </div>
-          <div class="progress-track" role="progressbar" aria-label="Quizfortschritt" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0">
+          <div class="progress-track" role="progressbar" aria-label="Quizfortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
             <div class="progress-fill" id="progress-fill"></div>
           </div>
           <p class="question-count" id="question-category">Rasse erkennen</p>
@@ -550,72 +565,134 @@
   </dialog>
 
   <script>
-    const questions = [
-      {
-        breed: "Golden Retriever",
-        image: "https://images.dog.ceo/breeds/retriever-golden/20200814_113907_200814.jpg",
-        alt: "Golden Retriever mit hellem, goldenem Fell",
-        answers: ["Golden Retriever", "Labrador Retriever", "Border Collie"],
-        correct: 0,
-        explanation: "Der Golden Retriever ist für sein freundliches Wesen und sein dichtes, goldenes Fell bekannt."
-      },
-      {
-        breed: "Labrador Retriever",
-        image: "https://images.dog.ceo/breeds/labrador/n02099712_2332.jpg",
-        alt: "Labrador Retriever mit kurzem Fell",
-        answers: ["Golden Retriever", "Labrador Retriever", "Weimaraner"],
-        correct: 1,
-        explanation: "Der Labrador Retriever hat kurzes, dichtes Fell und ist oft ein begeisterter Apportierhund."
-      },
-      {
-        breed: "Dackel",
-        image: "https://images.dog.ceo/breeds/dachshund/kaninchen-dachshund-953699_640.jpg",
-        alt: "Dackel mit langem Körper und kurzen Beinen",
-        answers: ["Beagle", "Dackel", "Corgi"],
-        correct: 1,
-        explanation: "Der Dackel, auch Dachshund genannt, ist an seinem langen Körper und den kurzen Beinen gut zu erkennen."
-      },
-      {
-        breed: "Beagle",
-        image: "https://images.dog.ceo/breeds/beagle/n02088364_2572.jpg",
-        alt: "Beagle mit typischer dreifarbiger Zeichnung",
-        answers: ["Beagle", "Basset Hound", "Jack Russell Terrier"],
-        correct: 0,
-        explanation: "Beagles sind mittelkleine Laufhunde mit feiner Nase. Viele haben eine dreifarbige Fellzeichnung."
-      },
-      {
-        breed: "Siberian Husky",
-        image: "https://images.dog.ceo/breeds/husky/tomas.jpg",
-        alt: "Siberian Husky mit dichtem Fell",
-        answers: ["Alaskan Malamute", "Siberian Husky", "Samojede"],
-        correct: 1,
-        explanation: "Der Siberian Husky ist ein ausdauernder Schlittenhund mit dichtem Fell und oft auffälligen Augen."
-      },
-      {
-        breed: "Chihuahua",
-        image: "https://images.dog.ceo/breeds/chihuahua/n02085620_13151.jpg",
-        alt: "Chihuahua, eine sehr kleine Hunderasse",
-        answers: ["Zwergpinscher", "Chihuahua", "Papillon"],
-        correct: 1,
-        explanation: "Der Chihuahua gilt als kleinste Hunderasse der Welt und kann kurzes oder langes Fell haben."
-      },
-      {
-        breed: "Pudel",
-        image: "https://images.dog.ceo/breeds/poodle-standard/n02113799_153.jpg",
-        alt: "Schwarzer Pudel mit typischer Pudelschur auf dem Rasen",
-        answers: ["Bichon Frisé", "Pudel", "Portugiesischer Wasserhund"],
-        correct: 1,
-        explanation: "Pudel haben dichtes, lockiges Fell und werden oft mit einer typischen Pudelschur gezeigt. Es gibt sie in mehreren Größen."
-      },
-      {
-        breed: "Border Collie",
-        image: "https://images.dog.ceo/breeds/collie-border/n02106166_4957.jpg",
-        alt: "Border Collie mit schwarz-weißem Fell",
-        answers: ["Australian Shepherd", "Shetland Sheepdog", "Border Collie"],
-        correct: 2,
-        explanation: "Border Collies sind kluge, aktive Hütehunde, die gern beschäftigt werden und schnell lernen."
-      }
+    const breedCatalog = [
+      { name: "Affenpinscher", path: "affenpinscher" },
+      { name: "Afghanischer Windhund", path: "hound/afghan" },
+      { name: "Airedale Terrier", path: "airedale" },
+      { name: "Akita", path: "akita" },
+      { name: "Appenzeller Sennenhund", path: "appenzeller" },
+      { name: "Australian Kelpie", path: "australian/kelpie" },
+      { name: "Australian Shepherd", path: "australian/shepherd" },
+      { name: "Basenji", path: "basenji" },
+      { name: "Beagle", path: "beagle" },
+      { name: "Bluetick Coonhound", path: "bluetick" },
+      { name: "Borzoi", path: "borzoi" },
+      { name: "Bouvier des Flandres", path: "bouvier" },
+      { name: "Boxer", path: "boxer" },
+      { name: "Briard", path: "briard" },
+      { name: "Norwegischer Buhund", path: "buhund/norwegian" },
+      { name: "Boston Terrier", path: "bulldog/boston" },
+      { name: "Englische Bulldogge", path: "bulldog/english" },
+      { name: "Französische Bulldogge", path: "bulldog/french" },
+      { name: "Staffordshire Bullterrier", path: "bullterrier/staffordshire" },
+      { name: "Australian Cattle Dog", path: "cattledog/australian" },
+      { name: "Pudel", path: "poodle/standard" },
+      { name: "Chihuahua", path: "chihuahua" },
+      { name: "Chow Chow", path: "chow" },
+      { name: "Clumber Spaniel", path: "clumber" },
+      { name: "Jack Russell Terrier", path: "terrier/russell" },
+      { name: "Border Collie", path: "collie/border" },
+      { name: "Cardigan Welsh Corgi", path: "corgi/cardigan" },
+      { name: "Coton de Tulear", path: "cotondetulear" },
+      { name: "Dackel", path: "dachshund" },
+      { name: "Dalmatiner", path: "dalmatian" },
+      { name: "Deutsche Dogge", path: "dane/great" },
+      { name: "Danisch-Schwedischer Farmhund", path: "danishswedish/farmdog" },
+      { name: "Scottish Deerhound", path: "deerhound/scottish" },
+      { name: "Dobermann", path: "doberman" },
+      { name: "Norwegischer Elchhund", path: "elkhound/norwegian" },
+      { name: "Entlebucher Sennenhund", path: "entlebucher" },
+      { name: "American Eskimo Dog", path: "eskimo" },
+      { name: "Finnischer Lapphund", path: "finnish/lapphund" },
+      { name: "Bichon Frise", path: "frise/bichon" },
+      { name: "Deutscher Schaferhund", path: "german/shepherd" },
+      { name: "Italienisches Windspiel", path: "greyhound/italian" },
+      { name: "Groenendael", path: "groenendael" },
+      { name: "Havaneser", path: "havanese" },
+      { name: "Basset Hound", path: "hound/basset" },
+      { name: "Bloodhound", path: "hound/blood" },
+      { name: "English Foxhound", path: "hound/english" },
+      { name: "Ibizan Hound", path: "hound/ibizan" },
+      { name: "Plott Hound", path: "hound/plott" },
+      { name: "Treeing Walker Coonhound", path: "hound/walker" },
+      { name: "Siberian Husky", path: "husky" },
+      { name: "Keeshond", path: "keeshond" },
+      { name: "Komondor", path: "komondor" },
+      { name: "Kuvasz", path: "kuvasz" },
+      { name: "English Springer Spaniel", path: "springer/english" },
+      { name: "Labrador Retriever", path: "labrador" },
+      { name: "Leonberger", path: "leonberg" },
+      { name: "Lhasa Apso", path: "lhasa" },
+      { name: "Tibetmastiff", path: "mastiff/tibetan" },
+      { name: "Malteser", path: "maltese" },
+      { name: "Mexikanischer Nackthund", path: "mexicanhairless" },
+      { name: "Berner Sennenhund", path: "mountain/bernese" },
+      { name: "Grosser Schweizer Sennenhund", path: "mountain/swiss" },
+      { name: "Neufundlander", path: "newfoundland" },
+      { name: "Otterhound", path: "otterhound" },
+      { name: "Kaukasischer Owtscharka", path: "ovcharka/caucasian" },
+      { name: "Papillon", path: "papillon" },
+      { name: "Pekingese", path: "pekinese" },
+      { name: "Pembroke Welsh Corgi", path: "pembroke" },
+      { name: "Zwergpinscher", path: "pinscher/miniature" },
+      { name: "Belgischer Malinois", path: "malinois" },
+      { name: "Deutsch Kurzhaar", path: "pointer/german" },
+      { name: "Deutsch Langhaar", path: "pointer/germanlonghair" },
+      { name: "Pomeranian", path: "pomeranian" },
+      { name: "Mops", path: "pug" },
+      { name: "Pyrenaenberghund", path: "pyrenees" },
+      { name: "Redbone Coonhound", path: "redbone" },
+      { name: "Chesapeake Bay Retriever", path: "retriever/chesapeake" },
+      { name: "Curly-Coated Retriever", path: "retriever/curly" },
+      { name: "Flat-Coated Retriever", path: "retriever/flatcoated" },
+      { name: "Golden Retriever", path: "retriever/golden" },
+      { name: "Rhodesian Ridgeback", path: "ridgeback/rhodesian" },
+      { name: "Rottweiler", path: "rottweiler" },
+      { name: "Rough Collie", path: "rough/collie" },
+      { name: "Saluki", path: "saluki" },
+      { name: "Samojede", path: "samoyed" },
+      { name: "Schipperke", path: "schipperke" },
+      { name: "Riesenschnauzer", path: "schnauzer/giant" },
+      { name: "Zwergschnauzer", path: "schnauzer/miniature" },
+      { name: "English Setter", path: "setter/english" },
+      { name: "Gordon Setter", path: "setter/gordon" },
+      { name: "Irish Setter", path: "setter/irish" },
+      { name: "Shar Pei", path: "sharpei" },
+      { name: "Old English Sheepdog", path: "sheepdog/english" },
+      { name: "Shetland Sheepdog", path: "sheepdog/shetland" },
+      { name: "Shiba Inu", path: "shiba" },
+      { name: "Shih Tzu", path: "shihtzu" },
+      { name: "Cavalier King Charles Spaniel", path: "spaniel/blenheim" },
+      { name: "Brittany Spaniel", path: "spaniel/brittany" },
+      { name: "English Cocker Spaniel", path: "spaniel/cocker" },
+      { name: "Irish Water Spaniel", path: "spaniel/irish" }
     ];
+
+    function shuffle(items) {
+      const shuffled = [...items];
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
+
+    function createQuestions() {
+      return shuffle(breedCatalog).map(breed => {
+        const otherBreeds = shuffle(breedCatalog.filter(candidate => candidate !== breed)).slice(0, 2);
+        const options = shuffle([breed, ...otherBreeds]);
+        return {
+          breed: breed.name,
+          imagePath: breed.path,
+          answers: options.map(option => option.name),
+          correct: options.indexOf(breed),
+          explanation: "Achte auf Fell, Körperform und Ohren, um Hunderassen zu unterscheiden."
+        };
+      });
+    }
+
+    const imageCache = new Map();
+    let questions = createQuestions();
 
     const quizView = document.querySelector("#quiz-view");
     const resultView = document.querySelector("#result-view");
@@ -627,6 +704,7 @@
     const questionText = document.querySelector("#question-text");
     const dogPhoto = document.querySelector("#dog-photo");
     const photoTrigger = document.querySelector("#photo-trigger");
+    const photoStatus = document.querySelector("#photo-status");
     const photoDialog = document.querySelector("#photo-dialog");
     const fullscreenPhoto = document.querySelector("#fullscreen-photo");
     const answersElement = document.querySelector("#answers");
@@ -635,6 +713,7 @@
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
+    let photoLoaded = false;
 
     photoTrigger.addEventListener("click", () => {
       fullscreenPhoto.src = dogPhoto.currentSrc || dogPhoto.src;
@@ -648,17 +727,61 @@
     });
     photoDialog.addEventListener("close", () => photoTrigger.focus({ preventScroll: true }));
 
+    function getBreedImage(path) {
+      if (!imageCache.has(path)) {
+        const imageRequest = fetch(`https://dog.ceo/api/breed/${path}/images/random`)
+          .then(response => {
+            if (!response.ok) throw new Error("Bildquelle nicht erreichbar");
+            return response.json();
+          })
+          .then(result => {
+            if (result.status !== "success") throw new Error("Kein Bild für diese Rasse gefunden");
+            return result.message;
+          });
+        imageCache.set(path, imageRequest);
+      }
+      return imageCache.get(path);
+    }
+
+    async function loadQuestionImage(question, questionIndex) {
+      try {
+        const imageUrl = await getBreedImage(question.imagePath);
+        const image = new Image();
+        image.src = imageUrl;
+        await image.decode();
+        if (questionIndex !== currentQuestion) return;
+
+        dogPhoto.src = imageUrl;
+        dogPhoto.alt = `Hundefoto zu Frage ${questionIndex + 1}`;
+        photoLoaded = true;
+        photoStatus.hidden = true;
+        photoTrigger.disabled = false;
+        [...answersElement.children].forEach(button => { button.disabled = false; });
+      } catch {
+        if (questionIndex !== currentQuestion) return;
+        photoStatus.textContent = "Foto nicht verfügbar. Diese Frage kann übersprungen werden.";
+        nextButton.disabled = false;
+        nextButton.innerHTML = currentQuestion === questions.length - 1
+          ? 'Ergebnis ansehen <span aria-hidden="true">→</span>'
+          : 'Überspringen <span aria-hidden="true">→</span>';
+      }
+    }
+
     function renderQuestion() {
       const question = questions[currentQuestion];
       answered = false;
+      photoLoaded = false;
       progressLabel.textContent = `Frage ${currentQuestion + 1} von ${questions.length}`;
       scoreLabel.textContent = `${score} richtig`;
       progressTrack.setAttribute("aria-valuenow", String(currentQuestion));
       progressFill.style.width = `${(currentQuestion / questions.length) * 100}%`;
       categoryLabel.textContent = `Rasse ${currentQuestion + 1}`;
       questionText.textContent = "Zu welcher Rasse gehört dieser Hund?";
-      dogPhoto.src = question.image;
-      dogPhoto.alt = question.alt;
+      dogPhoto.removeAttribute("src");
+      dogPhoto.alt = "Hundefoto wird geladen";
+      photoTrigger.disabled = true;
+      photoStatus.hidden = false;
+      photoStatus.textContent = "Foto wird geladen …";
       feedback.textContent = "";
       nextButton.disabled = true;
       nextButton.innerHTML = currentQuestion === questions.length - 1
@@ -668,12 +791,14 @@
         const button = document.createElement("button");
         button.className = "answer";
         button.type = "button";
+        button.disabled = true;
         button.innerHTML = `<span class="answer-key">${String.fromCharCode(65 + index)}</span><span class="answer-text"></span><span class="answer-mark" aria-hidden="true"></span>`;
         button.querySelector(".answer-text").textContent = answer;
         button.addEventListener("click", () => chooseAnswer(index));
         return button;
       }));
       questionText.focus({ preventScroll: true });
+      loadQuestionImage(question, currentQuestion);
     }
 
     function chooseAnswer(selectedIndex) {
@@ -711,7 +836,7 @@
       if (score === questions.length) {
         title.textContent = "Richtig stark!";
         copy.textContent = "Du hast alle Hunderassen erkannt. Dein Rassenwissen ist wirklich beeindruckend.";
-      } else if (score >= 5) {
+      } else if (score >= 75) {
         title.textContent = "Gutes Rassenwissen!";
         copy.textContent = "Du hast schon viele Rassen erkannt. Mit den kurzen Tipps lernst du noch ein paar spannende Merkmale dazu.";
       } else {
@@ -722,7 +847,7 @@
     }
 
     nextButton.addEventListener("click", () => {
-      if (!answered) return;
+      if (!answered && photoLoaded) return;
       if (currentQuestion === questions.length - 1) {
         showResult();
         return;
@@ -734,6 +859,8 @@
     document.querySelector("#restart-button").addEventListener("click", () => {
       currentQuestion = 0;
       score = 0;
+      questions = createQuestions();
+      imageCache.clear();
       resultView.hidden = true;
       quizView.hidden = false;
       renderQuestion();
