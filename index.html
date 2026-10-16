@@ -104,6 +104,26 @@
     .topbar-rank:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
     .rank-icon { font-size: 17px; line-height: 1; }
 
+    .topbar-auth {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 12px;
+      border: 1px solid #cbd4bd;
+      border-radius: 6px;
+      color: var(--green-dark);
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .topbar-auth:hover { background: #edf1e4; }
+    .topbar-auth:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+    .auth-icon { font-size: 17px; line-height: 1; }
+
     main {
       display: grid;
       grid-template-columns: minmax(0, 0.95fr) minmax(380px, 1.05fr);
@@ -633,6 +653,34 @@
 
     .leaderboard-dialog-head h2 { margin: 0; font-size: 26px; }
 
+    .auth-dialog {
+      position: fixed;
+      inset: 0;
+      width: min(420px, calc(100% - 32px));
+      max-width: none;
+      max-height: calc(100% - 32px);
+      margin: auto;
+      padding: 22px;
+      overflow: auto;
+      border: 1px solid #d6ded1;
+      border-radius: 10px;
+      color: var(--ink);
+      background: var(--surface);
+      box-shadow: 0 24px 70px rgb(0 0 0 / 28%);
+    }
+
+    .auth-dialog[open] { display: block; }
+    .auth-dialog::backdrop { background: rgb(20 29 24 / 68%); }
+    .auth-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .auth-dialog-head h2 { margin: 0; font-size: 26px; }
+    .auth-mode { display: flex; gap: 4px; margin-bottom: 16px; padding: 3px; border-radius: 6px; background: #edf1e4; }
+    .auth-mode-button { min-height: 36px; flex: 1; border: 0; border-radius: 4px; color: var(--green-dark); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .auth-mode-button[aria-pressed="true"] { color: white; background: var(--green); }
+    .auth-field { display: block; margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+    .auth-field input { display: block; width: 100%; min-height: 42px; margin-top: 5px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font: inherit; }
+    .auth-status { min-height: 20px; margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .auth-submit { width: 100%; margin-top: 4px; }
+
     [hidden] { display: none !important; }
 
     @keyframes rise-in {
@@ -657,6 +705,8 @@
       .topbar-qr .qr-code { width: 48px; height: 48px; }
       .topbar-rank { width: 44px; min-height: 44px; padding: 0; font-size: 0; }
       .rank-icon { font-size: 19px; }
+      .topbar-auth { width: 44px; min-height: 44px; padding: 0; font-size: 0; }
+      .auth-icon { font-size: 19px; }
       main {
         min-height: 0;
         flex: 1;
@@ -727,6 +777,9 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Pfotenwissen</span></div>
       <span class="level-tag">Für Anfänger</span>
+      <button class="topbar-auth" id="auth-open" type="button" aria-label="Anmelden oder registrieren" title="Anmelden oder registrieren">
+        <span class="auth-icon" aria-hidden="true">👤</span><span id="auth-open-label">Anmelden</span>
+      </button>
       <button class="topbar-rank" id="leaderboard-open" type="button" aria-label="Rangliste öffnen" title="Rangliste öffnen">
         <span class="rank-icon" aria-hidden="true">🏆</span><span class="rank-label">Rangliste</span>
       </button>
@@ -832,6 +885,32 @@
     </div>
   </dialog>
 
+  <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-dialog-title">
+    <div class="auth-dialog-head">
+      <h2 id="auth-dialog-title">Konto</h2>
+      <button class="photo-close" id="auth-close" type="button" aria-label="Anmeldung schließen">×</button>
+    </div>
+    <div class="auth-mode" id="auth-mode-switch" role="group" aria-label="Anmeldemodus">
+      <button class="auth-mode-button" id="auth-mode-login" type="button" data-auth-mode="login" aria-pressed="true">Anmelden</button>
+      <button class="auth-mode-button" id="auth-mode-signup" type="button" data-auth-mode="signup" aria-pressed="false">Registrieren</button>
+    </div>
+    <form id="auth-form">
+      <label class="auth-field" id="auth-nickname-field" for="auth-nickname" hidden>Nickname
+        <input id="auth-nickname" name="nickname" type="text" minlength="2" maxlength="16" autocomplete="nickname">
+      </label>
+      <label class="auth-field" for="auth-email">E-Mail-Adresse
+        <input id="auth-email" name="email" type="email" autocomplete="email" required>
+      </label>
+      <label class="auth-field" for="auth-password">Passwort
+        <input id="auth-password" name="password" type="password" minlength="8" autocomplete="current-password" required>
+      </label>
+      <button class="score-submit auth-submit" id="auth-submit" type="submit">Anmelden</button>
+      <p class="auth-status" id="auth-status" role="status" aria-live="polite"></p>
+    </form>
+    <button class="score-submit auth-submit" id="auth-logout" type="button" hidden>Abmelden</button>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="leaderboard-config.js"></script>
   <script>
     const breedCatalog = [
@@ -1007,15 +1086,168 @@
     const leaderboardRows = document.querySelector("#leaderboard-rows");
     const leaderboardStatus = document.querySelector("#leaderboard-status");
     const leaderboardConfig = window.QUIZ_LEADERBOARD_CONFIG || {};
+    const authDialog = document.querySelector("#auth-dialog");
+    const authDialogTitle = document.querySelector("#auth-dialog-title");
+    const authOpen = document.querySelector("#auth-open");
+    const authOpenLabel = document.querySelector("#auth-open-label");
+    const authForm = document.querySelector("#auth-form");
+    const authNicknameInput = document.querySelector("#auth-nickname");
+    const authNicknameField = document.querySelector("#auth-nickname-field");
+    const authEmailInput = document.querySelector("#auth-email");
+    const authPasswordInput = document.querySelector("#auth-password");
+    const authSubmit = document.querySelector("#auth-submit");
+    const authStatus = document.querySelector("#auth-status");
+    const authLogout = document.querySelector("#auth-logout");
+    const authModeSwitch = document.querySelector("#auth-mode-switch");
+    const authModeButtons = [...document.querySelectorAll("[data-auth-mode]")];
+    const authClient = typeof window.supabase?.createClient === "function"
+      && /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(leaderboardConfig.url || "")
+      && typeof leaderboardConfig.anonKey === "string"
+      && leaderboardConfig.anonKey.length > 20
+      ? window.supabase.createClient(leaderboardConfig.url, leaderboardConfig.anonKey)
+      : null;
     const jokerButtons = [...document.querySelectorAll("[data-joker]")];
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
     let photoLoaded = false;
     let playerNickname = "";
+    let authSession = null;
+    let authMode = "login";
     const jokerUsesRemaining = { half: 2, hint: 2, skip: 2, retry: 2 };
     let extraTryArmed = false;
     const usedJokersThisQuestion = new Set();
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const isSignup = mode === "signup";
+      authDialogTitle.textContent = isSignup ? "Konto erstellen" : "Anmelden";
+      authNicknameField.hidden = !isSignup;
+      authNicknameInput.required = isSignup;
+      authPasswordInput.autocomplete = isSignup ? "new-password" : "current-password";
+      authSubmit.textContent = isSignup ? "Registrieren" : "Anmelden";
+      authModeButtons.forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.authMode === mode));
+      });
+    }
+
+    function updateAuthSession(session) {
+      authSession = session;
+      const nickname = session?.user?.user_metadata?.nickname || "";
+      authOpenLabel.textContent = session ? "Konto" : "Anmelden";
+      authOpen.setAttribute("aria-label", session ? "Konto verwalten" : "Anmelden oder registrieren");
+      if (nickname) {
+        playerNickname = nickname;
+        nicknameInput.value = nickname;
+        leaderboardPlayer.textContent = nickname;
+      }
+    }
+
+    function openAuthDialog() {
+      authStatus.textContent = "";
+      if (!authClient) {
+        authModeSwitch.hidden = true;
+        authForm.hidden = true;
+        authLogout.hidden = true;
+        authStatus.textContent = "Anmeldung noch nicht eingerichtet. Die Supabase-Projektwerte fehlen.";
+      } else if (authSession) {
+        authModeSwitch.hidden = true;
+        authForm.hidden = true;
+        authLogout.hidden = false;
+        authStatus.textContent = `Angemeldet als ${authSession.user.email}.`;
+      } else {
+        authModeSwitch.hidden = false;
+        authForm.hidden = false;
+        authLogout.hidden = true;
+        setAuthMode("login");
+      }
+      authDialog.showModal();
+    }
+
+    authOpen.addEventListener("click", openAuthDialog);
+    document.querySelector("#auth-close").addEventListener("click", () => authDialog.close());
+    authDialog.addEventListener("click", event => {
+      if (event.target === authDialog) authDialog.close();
+    });
+    authDialog.addEventListener("close", () => authOpen.focus({ preventScroll: true }));
+    authModeButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        setAuthMode(button.dataset.authMode);
+        authStatus.textContent = "";
+      });
+    });
+
+    authForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!authClient) {
+        authStatus.textContent = "Anmeldung noch nicht eingerichtet. Die Supabase-Projektwerte fehlen.";
+        return;
+      }
+
+      const email = authEmailInput.value.trim();
+      const password = authPasswordInput.value;
+      const nickname = authNicknameInput.value.trim().replace(/\s+/g, " ");
+      if (authMode === "signup" && (nickname.length < 2 || nickname.length > 16)) {
+        authNicknameInput.setCustomValidity("Der Nickname muss 2 bis 16 Zeichen lang sein.");
+        authNicknameInput.reportValidity();
+        return;
+      }
+      authNicknameInput.setCustomValidity("");
+      authSubmit.disabled = true;
+      authStatus.textContent = authMode === "signup" ? "Konto wird angelegt …" : "Anmeldung läuft …";
+
+      try {
+        if (authMode === "signup") {
+          const { data, error } = await authClient.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.href,
+              data: { nickname }
+            }
+          });
+          if (error) throw error;
+          if (data.session) {
+            updateAuthSession(data.session);
+            authDialog.close();
+          } else {
+            authStatus.textContent = "Konto angelegt. Bitte bestätige zuerst den Link in deiner E-Mail.";
+          }
+        } else {
+          const { data, error } = await authClient.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          updateAuthSession(data.session);
+          authDialog.close();
+        }
+      } catch (error) {
+        authStatus.textContent = error.message || "Anmeldung fehlgeschlagen. Bitte versuche es erneut.";
+      } finally {
+        authSubmit.disabled = false;
+      }
+    });
+
+    authLogout.addEventListener("click", async () => {
+      if (!authClient) return;
+      authLogout.disabled = true;
+      const { error } = await authClient.auth.signOut();
+      authLogout.disabled = false;
+      if (error) {
+        authStatus.textContent = error.message;
+        return;
+      }
+      updateAuthSession(null);
+      authDialog.close();
+    });
+
+    if (authClient) {
+      authClient.auth.getSession().then(({ data, error }) => {
+        if (!error) updateAuthSession(data.session);
+      });
+      authClient.auth.onAuthStateChange((_event, session) => updateAuthSession(session));
+    } else {
+      authSubmit.disabled = true;
+      authOpenLabel.textContent = "Konto";
+    }
 
     startForm.addEventListener("submit", event => {
       event.preventDefault();
@@ -1052,7 +1284,7 @@
     function leaderboardHeaders() {
       return {
         apikey: leaderboardConfig.anonKey,
-        Authorization: `Bearer ${leaderboardConfig.anonKey}`
+        Authorization: `Bearer ${authSession?.access_token || leaderboardConfig.anonKey}`
       };
     }
 
@@ -1102,6 +1334,11 @@
         leaderboardStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
         return;
       }
+      if (!authSession) {
+        leaderboardStatus.textContent = "Bitte melde dich an, um deine Punktzahl einzutragen.";
+        openAuthDialog();
+        return;
+      }
 
       scoreSubmit.disabled = true;
       leaderboardStatus.textContent = "Punktzahl wird eingetragen …";
@@ -1113,7 +1350,7 @@
             "Content-Type": "application/json",
             Prefer: "return=minimal"
           },
-          body: JSON.stringify({ nickname: playerNickname, score })
+          body: JSON.stringify({ nickname: playerNickname, score, user_id: authSession.user.id })
         });
         if (!response.ok) throw new Error("Punktzahl konnte nicht gespeichert werden");
         leaderboardStatus.textContent = "Punktzahl eingetragen.";
@@ -1132,6 +1369,11 @@
       if (!playerNickname) {
         event.preventDefault();
         leaderboardStatus.textContent = "Bitte starte das Quiz zuerst mit einem Nickname.";
+        return;
+      }
+      if (!authSession) {
+        event.preventDefault();
+        leaderboardStatus.textContent = "Bitte melde dich an, um deine Punktzahl einzutragen.";
       }
     }, { capture: true });
 
