@@ -534,6 +534,60 @@
     .result-view h2 { margin-bottom: 12px; font-size: 34px; }
     .result-copy { max-width: 390px; margin-bottom: 24px; color: var(--muted); font-size: 14px; line-height: 1.65; }
     .result-view .restart-button { align-self: flex-start; }
+
+    .leaderboard {
+      width: min(100%, 460px);
+      margin-top: 18px;
+    }
+
+    .leaderboard h3 {
+      margin: 0 0 10px;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .score-form { margin-bottom: 10px; }
+    .score-form label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; }
+    .score-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+
+    .nickname-input {
+      min-width: 0;
+      min-height: 40px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: white;
+      font: inherit;
+    }
+
+    .nickname-input:focus-visible, .score-submit:focus-visible {
+      outline: 3px solid var(--coral);
+      outline-offset: 2px;
+    }
+
+    .score-submit {
+      min-height: 40px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 6px;
+      color: white;
+      background: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .score-submit:disabled { background: #9aa69c; cursor: not-allowed; }
+    .leaderboard-status { min-height: 18px; margin: 0 0 6px; color: var(--muted); font-size: 11px; }
+    .leaderboard-table-wrap { max-height: 210px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+    .leaderboard table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .leaderboard th, .leaderboard td { padding: 7px 9px; border-bottom: 1px solid #e8ebe2; text-align: left; }
+    .leaderboard th { position: sticky; top: 0; color: var(--green-dark); background: #eef2e8; font-size: 10px; text-transform: uppercase; }
+    .leaderboard td:last-child, .leaderboard th:last-child { text-align: right; }
+    .leaderboard tbody tr:last-child td { border-bottom: 0; }
+
     [hidden] { display: none !important; }
 
     @keyframes rise-in {
@@ -574,6 +628,9 @@
       .dog-photo { max-height: clamp(130px, 21svh, 180px); }
       .feedback { min-height: 44px; margin-top: 10px; padding: 8px 10px; }
       .quiz-footer { padding-top: 8px; }
+      .result-view { justify-content: flex-start; overflow-y: auto; }
+      .leaderboard { margin-top: 12px; }
+      .leaderboard-table-wrap { max-height: 145px; }
     }
 
     @media (max-width: 390px) {
@@ -672,6 +729,24 @@
           <div class="result-score" id="result-score" aria-label="Ergebnis"></div>
           <h2 id="result-title" tabindex="-1"></h2>
           <p class="result-copy" id="result-copy"></p>
+          <section class="leaderboard" aria-labelledby="leaderboard-title">
+            <h3 id="leaderboard-title">Top 10 weltweit</h3>
+            <form class="score-form" id="score-form">
+              <label for="nickname">Nickname (öffentlich sichtbar)</label>
+              <div class="score-entry">
+                <input class="nickname-input" id="nickname" name="nickname" type="text" minlength="2" maxlength="16" autocomplete="nickname" placeholder="Dein Nickname" required>
+                <button class="score-submit" id="score-submit" type="submit" disabled>Punktzahl eintragen</button>
+              </div>
+            </form>
+            <p class="leaderboard-status" id="leaderboard-status" role="status" aria-live="polite"></p>
+            <div class="leaderboard-table-wrap">
+              <table>
+                <caption class="visually-hidden">Die zehn besten Punktzahlen im Hundequiz</caption>
+                <thead><tr><th scope="col">Platz</th><th scope="col">Nickname</th><th scope="col">Richtig</th></tr></thead>
+                <tbody id="leaderboard-rows"></tbody>
+              </table>
+            </div>
+          </section>
           <button class="restart-button" id="restart-button" type="button">Nochmal spielen <span aria-hidden="true">↻</span></button>
         </section>
       </section>
@@ -683,6 +758,7 @@
     <img class="fullscreen-photo" id="fullscreen-photo" alt="">
   </dialog>
 
+  <script src="leaderboard-config.js"></script>
   <script>
     const breedCatalog = [
       { name: "Affenpinscher", path: "affenpinscher" },
@@ -832,6 +908,12 @@
     const feedback = document.querySelector("#feedback");
     const nextButton = document.querySelector("#next-button");
     const jokerRemaining = document.querySelector("#joker-remaining");
+    const scoreForm = document.querySelector("#score-form");
+    const nicknameInput = document.querySelector("#nickname");
+    const scoreSubmit = document.querySelector("#score-submit");
+    const leaderboardRows = document.querySelector("#leaderboard-rows");
+    const leaderboardStatus = document.querySelector("#leaderboard-status");
+    const leaderboardConfig = window.QUIZ_LEADERBOARD_CONFIG || {};
     const jokerButtons = [...document.querySelectorAll("[data-joker]")];
     let currentQuestion = 0;
     let score = 0;
@@ -840,6 +922,90 @@
     const jokerUsesRemaining = { half: 2, hint: 2, skip: 2, retry: 2 };
     let extraTryArmed = false;
     const usedJokersThisQuestion = new Set();
+
+    function hasLeaderboardConfig() {
+      return typeof leaderboardConfig.url === "string"
+        && /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(leaderboardConfig.url)
+        && typeof leaderboardConfig.anonKey === "string"
+        && leaderboardConfig.anonKey.length > 20;
+    }
+
+    function leaderboardHeaders() {
+      return {
+        apikey: leaderboardConfig.anonKey,
+        Authorization: `Bearer ${leaderboardConfig.anonKey}`
+      };
+    }
+
+    async function loadLeaderboard() {
+      if (!hasLeaderboardConfig()) {
+        leaderboardStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
+        scoreSubmit.disabled = true;
+        return;
+      }
+
+      leaderboardStatus.textContent = "Rangliste wird geladen …";
+      try {
+        const query = "select=nickname,score,created_at&order=score.desc,created_at.asc&limit=10";
+        const response = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores?${query}`, {
+          headers: leaderboardHeaders()
+        });
+        if (!response.ok) throw new Error("Rangliste konnte nicht geladen werden");
+        const entries = await response.json();
+        leaderboardRows.replaceChildren(...entries.map((entry, index) => {
+          const row = document.createElement("tr");
+          const place = document.createElement("td");
+          const nickname = document.createElement("td");
+          const points = document.createElement("td");
+          place.textContent = String(index + 1);
+          nickname.textContent = entry.nickname;
+          points.textContent = String(entry.score);
+          row.append(place, nickname, points);
+          return row;
+        }));
+        leaderboardStatus.textContent = entries.length ? "" : "Noch keine Punktzahlen eingetragen.";
+        scoreSubmit.disabled = false;
+      } catch {
+        leaderboardStatus.textContent = "Rangliste gerade nicht erreichbar. Versuch es später erneut.";
+        scoreSubmit.disabled = false;
+      }
+    }
+
+    scoreForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!hasLeaderboardConfig()) {
+        leaderboardStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
+        return;
+      }
+
+      const nickname = nicknameInput.value.trim().replace(/\s+/g, " ");
+      if (nickname.length < 2 || nickname.length > 16) {
+        nicknameInput.setCustomValidity("Bitte gib einen Nickname mit 2 bis 16 Zeichen ein.");
+        nicknameInput.reportValidity();
+        return;
+      }
+      nicknameInput.setCustomValidity("");
+      scoreSubmit.disabled = true;
+      leaderboardStatus.textContent = "Punktzahl wird eingetragen …";
+      try {
+        const response = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores`, {
+          method: "POST",
+          headers: {
+            ...leaderboardHeaders(),
+            "Content-Type": "application/json",
+            Prefer: "return=minimal"
+          },
+          body: JSON.stringify({ nickname, score })
+        });
+        if (!response.ok) throw new Error("Punktzahl konnte nicht gespeichert werden");
+        scoreForm.reset();
+        leaderboardStatus.textContent = "Punktzahl eingetragen.";
+        await loadLeaderboard();
+      } catch {
+        leaderboardStatus.textContent = "Punktzahl konnte nicht gespeichert werden. Versuch es erneut.";
+        scoreSubmit.disabled = false;
+      }
+    });
 
     const publicQuizUrl = "https://hund-code.github.io/hundquiz/";
     quizQrLink.href = publicQuizUrl;
@@ -1047,6 +1213,7 @@
         title.textContent = "Ein guter Anfang!";
         copy.textContent = "Einige Rassen sehen sich ganz schön ähnlich. Spiel gern noch einmal und achte auf Fell, Körperform und Ohren.";
       }
+      loadLeaderboard();
       title.focus({ preventScroll: true });
     }
 
@@ -1057,6 +1224,7 @@
       const title = document.querySelector("#result-title");
       title.textContent = "Spiel vorbei";
       document.querySelector("#result-copy").textContent = `Frage ${currentQuestion + 1} war leider falsch. Starte neu und versuche es noch einmal.`;
+      loadLeaderboard();
       title.focus({ preventScroll: true });
     }
 
