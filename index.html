@@ -454,6 +454,18 @@
       line-height: 1;
     }
     .joker-button[data-uses="0"] .joker-use-count { display: none; }
+    .joker-button[data-uses="0"]::after {
+      position: absolute;
+      top: 50%;
+      right: 4px;
+      left: 4px;
+      height: 2px;
+      border-radius: 2px;
+      background: #c94e49;
+      content: "";
+      pointer-events: none;
+      transform: translateY(-50%) rotate(-35deg);
+    }
     .joker-button[data-joker="half"] { font-size: 10px; }
     .joker-button:hover:not(:disabled) { border-color: #8ca78e; background: #edf1e4; }
     .joker-button:disabled { color: #9ba49b; background: #f1f2ed; cursor: not-allowed; }
