@@ -259,10 +259,40 @@
       z-index: 1;
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      gap: 12px;
       margin: 22px 0 0;
       color: #e7eedf;
       font-size: 12px;
+    }
+
+    .quiz-note, .qr-share { display: flex; align-items: center; }
+    .quiz-note { gap: 10px; }
+
+    .qr-share {
+      gap: 8px;
+      max-width: 168px;
+      color: #f1f5e9;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.35;
+      text-decoration: none;
+    }
+
+    .qr-share:focus-visible {
+      outline: 3px solid var(--lime);
+      outline-offset: 4px;
+    }
+
+    .qr-code {
+      display: block;
+      width: 88px;
+      height: 88px;
+      flex: none;
+      padding: 4px;
+      border: 1px solid #d5dfcf;
+      border-radius: 6px;
+      background: white;
     }
 
     .note-dot {
@@ -602,7 +632,13 @@
             <span class="photo-status" id="photo-status" role="status">Foto wird geladen …</span>
           </button>
         </div>
-        <p class="intro-note"><span class="note-dot" aria-hidden="true"></span>100 Rassen · ohne Zeitdruck · mit Tipps</p>
+        <div class="intro-note">
+          <span class="quiz-note"><span class="note-dot" aria-hidden="true"></span>100 Rassen · ohne Zeitdruck · mit Tipps</span>
+          <a class="qr-share" id="quiz-qr-link" href="https://hund-code.github.io/hundquiz/" target="_blank" rel="noopener">
+            <img class="qr-code" id="quiz-qr-code" alt="QR-Code zum öffentlichen Hundequiz" width="220" height="220">
+            <span>Mit dem Handy scannen und spielen</span>
+          </a>
+        </div>
       </section>
 
       <section class="quiz-area" aria-label="Hundequiz">
@@ -786,6 +822,8 @@
     const categoryLabel = document.querySelector("#question-category");
     const questionText = document.querySelector("#question-text");
     const dogPhoto = document.querySelector("#dog-photo");
+    const quizQrLink = document.querySelector("#quiz-qr-link");
+    const quizQrCode = document.querySelector("#quiz-qr-code");
     const photoTrigger = document.querySelector("#photo-trigger");
     const photoStatus = document.querySelector("#photo-status");
     const photoDialog = document.querySelector("#photo-dialog");
@@ -802,6 +840,10 @@
     const jokerUsesRemaining = { half: 2, hint: 2, skip: 2, retry: 2 };
     let extraTryArmed = false;
     const usedJokersThisQuestion = new Set();
+
+    const publicQuizUrl = "https://hund-code.github.io/hundquiz/";
+    quizQrLink.href = publicQuizUrl;
+    quizQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(publicQuizUrl)}`;
 
     photoTrigger.addEventListener("click", () => {
       fullscreenPhoto.src = dogPhoto.currentSrc || dogPhoto.src;
