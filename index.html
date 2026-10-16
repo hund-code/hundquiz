@@ -84,6 +84,26 @@
       text-transform: uppercase;
     }
 
+    .topbar-rank {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 12px;
+      border: 1px solid #cbd4bd;
+      border-radius: 6px;
+      color: var(--green-dark);
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .topbar-rank:hover { background: #edf1e4; }
+    .topbar-rank:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+    .rank-icon { font-size: 17px; line-height: 1; }
+
     main {
       display: grid;
       grid-template-columns: minmax(0, 0.95fr) minmax(380px, 1.05fr);
@@ -584,6 +604,35 @@
     .leaderboard td:last-child, .leaderboard th:last-child { text-align: right; }
     .leaderboard tbody tr:last-child td { border-bottom: 0; }
 
+    .leaderboard-dialog {
+      position: fixed;
+      inset: 0;
+      width: min(520px, calc(100% - 32px));
+      max-width: none;
+      max-height: min(640px, calc(100% - 32px));
+      margin: auto;
+      padding: 22px;
+      overflow: auto;
+      border: 1px solid #d6ded1;
+      border-radius: 10px;
+      color: var(--ink);
+      background: var(--surface);
+      box-shadow: 0 24px 70px rgb(0 0 0 / 28%);
+    }
+
+    .leaderboard-dialog[open] { display: block; }
+    .leaderboard-dialog::backdrop { background: rgb(20 29 24 / 68%); }
+
+    .leaderboard-dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .leaderboard-dialog-head h2 { margin: 0; font-size: 26px; }
+
     [hidden] { display: none !important; }
 
     @keyframes rise-in {
@@ -606,6 +655,8 @@
       .topbar { flex: none; margin-bottom: 8px; }
       .topbar-qr { width: 48px; height: 48px; }
       .topbar-qr .qr-code { width: 48px; height: 48px; }
+      .topbar-rank { width: 44px; min-height: 44px; padding: 0; font-size: 0; }
+      .rank-icon { font-size: 19px; }
       main {
         min-height: 0;
         flex: 1;
@@ -645,6 +696,7 @@
       .joker-button { width: 32px; height: 34px; }
       .quiz-status { gap: 4px; }
       .score-chip { padding: 6px; }
+      .level-tag { display: none; }
     }
 
     @media (max-width: 760px) and (max-height: 720px) {
@@ -675,6 +727,9 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Pfotenwissen</span></div>
       <span class="level-tag">Für Anfänger</span>
+      <button class="topbar-rank" id="leaderboard-open" type="button" aria-label="Rangliste öffnen" title="Rangliste öffnen">
+        <span class="rank-icon" aria-hidden="true">🏆</span><span class="rank-label">Rangliste</span>
+      </button>
       <a class="topbar-qr" id="quiz-qr-link" href="https://hund-code.github.io/hundquiz/" target="_blank" rel="noopener" aria-label="Quiz auf dem Handy öffnen, QR-Code scannen" title="QR-Code zum Quiz">
         <img class="qr-code" id="quiz-qr-code" alt="QR-Code zum öffentlichen Hundequiz" width="220" height="220">
       </a>
@@ -760,6 +815,21 @@
   <dialog class="photo-dialog" id="photo-dialog" aria-label="Hundefoto im Vollbild">
     <button class="photo-close" id="photo-close" type="button" aria-label="Vollbild schließen">×</button>
     <img class="fullscreen-photo" id="fullscreen-photo" alt="">
+  </dialog>
+
+  <dialog class="leaderboard-dialog" id="leaderboard-dialog" aria-labelledby="leaderboard-dialog-title">
+    <div class="leaderboard-dialog-head">
+      <h2 id="leaderboard-dialog-title">Top 10 weltweit</h2>
+      <button class="photo-close" id="leaderboard-close" type="button" aria-label="Rangliste schließen">×</button>
+    </div>
+    <p class="leaderboard-status" id="leaderboard-modal-status" role="status" aria-live="polite"></p>
+    <div class="leaderboard-table-wrap">
+      <table>
+        <caption class="visually-hidden">Die zehn besten Punktzahlen im Hundequiz</caption>
+        <thead><tr><th scope="col">Platz</th><th scope="col">Nickname</th><th scope="col">Richtig</th></tr></thead>
+        <tbody id="leaderboard-modal-rows"></tbody>
+      </table>
+    </div>
   </dialog>
 
   <script src="leaderboard-config.js"></script>
@@ -910,6 +980,10 @@
     const startForm = document.querySelector("#start-form");
     const nicknameInput = document.querySelector("#nickname");
     const resultView = document.querySelector("#result-view");
+    const leaderboardDialog = document.querySelector("#leaderboard-dialog");
+    const leaderboardOpen = document.querySelector("#leaderboard-open");
+    const leaderboardModalRows = document.querySelector("#leaderboard-modal-rows");
+    const leaderboardModalStatus = document.querySelector("#leaderboard-modal-status");
     const leaderboardPlayer = document.querySelector("#leaderboard-player");
     const progressLabel = document.querySelector("#progress-label");
     const scoreLabel = document.querySelector("#score-label");
@@ -985,11 +1059,13 @@
     async function loadLeaderboard() {
       if (!hasLeaderboardConfig()) {
         leaderboardStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
+        leaderboardModalStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
         scoreSubmit.disabled = true;
         return;
       }
 
       leaderboardStatus.textContent = "Rangliste wird geladen …";
+      leaderboardModalStatus.textContent = "Rangliste wird geladen …";
       try {
         const query = "select=nickname,score,created_at&order=score.desc,created_at.asc&limit=10";
         const response = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores?${query}`, {
@@ -997,7 +1073,7 @@
         });
         if (!response.ok) throw new Error("Rangliste konnte nicht geladen werden");
         const entries = await response.json();
-        leaderboardRows.replaceChildren(...entries.map((entry, index) => {
+        const rows = entries.map((entry, index) => {
           const row = document.createElement("tr");
           const place = document.createElement("td");
           const nickname = document.createElement("td");
@@ -1007,11 +1083,15 @@
           points.textContent = String(entry.score);
           row.append(place, nickname, points);
           return row;
-        }));
+        });
+        leaderboardRows.replaceChildren(...rows);
+        leaderboardModalRows.replaceChildren(...rows.map(row => row.cloneNode(true)));
         leaderboardStatus.textContent = entries.length ? "" : "Noch keine Punktzahlen eingetragen.";
+        leaderboardModalStatus.textContent = entries.length ? "" : "Noch keine Punktzahlen eingetragen.";
         scoreSubmit.disabled = false;
       } catch {
         leaderboardStatus.textContent = "Rangliste gerade nicht erreichbar. Versuch es später erneut.";
+        leaderboardModalStatus.textContent = "Rangliste gerade nicht erreichbar. Versuch es später erneut.";
         scoreSubmit.disabled = false;
       }
     }
@@ -1066,6 +1146,16 @@
       if (event.target === photoDialog) photoDialog.close();
     });
     photoDialog.addEventListener("close", () => photoTrigger.focus({ preventScroll: true }));
+
+    leaderboardOpen.addEventListener("click", () => {
+      leaderboardDialog.showModal();
+      loadLeaderboard();
+    });
+    document.querySelector("#leaderboard-close").addEventListener("click", () => leaderboardDialog.close());
+    leaderboardDialog.addEventListener("click", event => {
+      if (event.target === leaderboardDialog) leaderboardDialog.close();
+    });
+    leaderboardDialog.addEventListener("close", () => leaderboardOpen.focus({ preventScroll: true }));
 
     jokerButtons.forEach(button => {
       button.addEventListener("click", () => useJoker(button.dataset.joker));
