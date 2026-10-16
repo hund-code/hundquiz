@@ -143,18 +143,19 @@
       line-height: 1.03;
     }
 
-    .intro-copy > p:not(.eyebrow) {
-      max-width: 350px;
-      margin-bottom: 0;
-      color: #dce7d9;
-      font-size: 15px;
-      line-height: 1.65;
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
     }
 
     .photo-trigger {
       display: block;
       width: 100%;
-      margin-top: 32px;
+      margin-top: 16px;
       padding: 0;
       overflow: hidden;
       border: 0;
@@ -172,7 +173,7 @@
     .dog-photo {
       display: block;
       width: 100%;
-      height: 240px;
+      height: 370px;
       margin-top: 0;
       border: 5px solid rgb(255 255 255 / 20%);
       border-radius: 8px;
@@ -440,10 +441,8 @@
       .topbar { margin-bottom: 14px; }
       main { grid-template-columns: 1fr; }
       .intro { min-height: 0; padding: 27px 26px 22px; }
-      h1 { max-width: 360px; font-size: 42px; }
-      .intro-copy > p:not(.eyebrow) { max-width: 460px; }
-      .photo-trigger { margin-top: 22px; }
-      .dog-photo { height: 190px; object-position: center 48%; }
+      .photo-trigger { margin-top: 16px; }
+      .dog-photo { height: 280px; object-position: center 48%; }
       .intro-note { margin-top: 15px; }
       .quiz-area { min-height: 560px; padding: 28px 26px 24px; }
       .question-count { margin-top: 27px; }
@@ -474,8 +473,7 @@
       <section class="intro" aria-labelledby="page-title">
         <div class="intro-copy">
           <p class="eyebrow">Das Rassen-Rätsel</p>
-          <h1 id="page-title">Welche Rasse ist das?</h1>
-          <p>Schau dir das Hundefoto an und finde heraus, welche Rasse darauf zu sehen ist.</p>
+          <h1 class="visually-hidden" id="page-title">Hunderassen-Quiz</h1>
           <button class="photo-trigger" id="photo-trigger" type="button" aria-label="Hundefoto in Vollbild anzeigen">
             <img class="dog-photo" id="dog-photo" src="https://images.dog.ceo/breeds/retriever-golden/20200814_113907_200814.jpg" alt="Hund der aktuellen Quizfrage" width="1000" height="700">
           </button>
