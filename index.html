@@ -151,15 +151,84 @@
       line-height: 1.65;
     }
 
+    .photo-trigger {
+      display: block;
+      width: 100%;
+      margin-top: 32px;
+      padding: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      line-height: 0;
+      cursor: zoom-in;
+    }
+
+    .photo-trigger:focus-visible {
+      outline: 3px solid var(--coral);
+      outline-offset: 4px;
+    }
+
     .dog-photo {
+      display: block;
       width: 100%;
       height: 240px;
-      margin-top: 32px;
+      margin-top: 0;
       border: 5px solid rgb(255 255 255 / 20%);
       border-radius: 8px;
       background: #adc09c;
       object-fit: contain;
       object-position: center 44%;
+    }
+
+    .photo-dialog {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      padding: 56px 24px 24px;
+      border: 0;
+      color: white;
+      background: rgb(20 29 24 / 97%);
+    }
+
+    .photo-dialog[open] {
+      display: grid;
+      place-items: center;
+    }
+
+    .photo-dialog::backdrop { background: rgb(13 19 16 / 92%); }
+
+    .fullscreen-photo {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+
+    .photo-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      display: grid;
+      width: 44px;
+      aspect-ratio: 1;
+      place-items: center;
+      border: 1px solid rgb(255 255 255 / 38%);
+      border-radius: 50%;
+      color: white;
+      background: rgb(255 255 255 / 8%);
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .photo-close:focus-visible {
+      outline: 3px solid var(--lime);
+      outline-offset: 3px;
     }
 
     .intro-note {
@@ -373,7 +442,8 @@
       .intro { min-height: 0; padding: 27px 26px 22px; }
       h1 { max-width: 360px; font-size: 42px; }
       .intro-copy > p:not(.eyebrow) { max-width: 460px; }
-      .dog-photo { height: 190px; margin-top: 22px; object-position: center 48%; }
+      .photo-trigger { margin-top: 22px; }
+      .dog-photo { height: 190px; object-position: center 48%; }
       .intro-note { margin-top: 15px; }
       .quiz-area { min-height: 560px; padding: 28px 26px 24px; }
       .question-count { margin-top: 27px; }
@@ -406,7 +476,9 @@
           <p class="eyebrow">Das Rassen-Rätsel</p>
           <h1 id="page-title">Welche Rasse ist das?</h1>
           <p>Schau dir das Hundefoto an und finde heraus, welche Rasse darauf zu sehen ist.</p>
-          <img class="dog-photo" id="dog-photo" src="https://images.dog.ceo/breeds/retriever-golden/20200814_113907_200814.jpg" alt="Hund der aktuellen Quizfrage" width="1000" height="700">
+          <button class="photo-trigger" id="photo-trigger" type="button" aria-label="Hundefoto in Vollbild anzeigen">
+            <img class="dog-photo" id="dog-photo" src="https://images.dog.ceo/breeds/retriever-golden/20200814_113907_200814.jpg" alt="Hund der aktuellen Quizfrage" width="1000" height="700">
+          </button>
         </div>
         <p class="intro-note"><span class="note-dot" aria-hidden="true"></span>8 Rassen · ohne Zeitdruck · mit Tipps</p>
       </section>
@@ -439,6 +511,11 @@
       </section>
     </main>
   </div>
+
+  <dialog class="photo-dialog" id="photo-dialog" aria-label="Hundefoto im Vollbild">
+    <button class="photo-close" id="photo-close" type="button" aria-label="Vollbild schließen">×</button>
+    <img class="fullscreen-photo" id="fullscreen-photo" alt="">
+  </dialog>
 
   <script>
     const questions = [
@@ -517,12 +594,27 @@
     const categoryLabel = document.querySelector("#question-category");
     const questionText = document.querySelector("#question-text");
     const dogPhoto = document.querySelector("#dog-photo");
+    const photoTrigger = document.querySelector("#photo-trigger");
+    const photoDialog = document.querySelector("#photo-dialog");
+    const fullscreenPhoto = document.querySelector("#fullscreen-photo");
     const answersElement = document.querySelector("#answers");
     const feedback = document.querySelector("#feedback");
     const nextButton = document.querySelector("#next-button");
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
+
+    photoTrigger.addEventListener("click", () => {
+      fullscreenPhoto.src = dogPhoto.currentSrc || dogPhoto.src;
+      fullscreenPhoto.alt = dogPhoto.alt;
+      photoDialog.showModal();
+    });
+
+    document.querySelector("#photo-close").addEventListener("click", () => photoDialog.close());
+    photoDialog.addEventListener("click", event => {
+      if (event.target === photoDialog) photoDialog.close();
+    });
+    photoDialog.addEventListener("close", () => photoTrigger.focus({ preventScroll: true }));
 
     function renderQuestion() {
       const question = questions[currentQuestion];
