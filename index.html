@@ -282,6 +282,9 @@
       font-weight: 700;
     }
 
+    .quiz-status, .joker-choice, .joker-actions { display: flex; align-items: center; }
+    .quiz-status { gap: 6px; }
+
     .score-chip {
       padding: 7px 10px;
       border-radius: 6px;
@@ -289,6 +292,23 @@
       background: #edf1e4;
       white-space: nowrap;
     }
+
+    .joker-choice { gap: 2px; padding: 2px; border-radius: 6px; background: #edf1e4; }
+    .joker-caption, .joker-remaining { color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .joker-count-button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      color: var(--green-dark);
+      background: transparent;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .joker-count-button[aria-pressed="true"] { color: white; background: var(--green); }
+    .joker-count-button:disabled { cursor: default; opacity: 0.72; }
 
     .progress-track {
       height: 6px;
@@ -350,7 +370,7 @@
       background: #f8faef;
     }
 
-    .answer:focus-visible, .next-button:focus-visible, .restart-button:focus-visible {
+    .answer:focus-visible, .joker-button:focus-visible, .joker-count-button:focus-visible, .next-button:focus-visible, .restart-button:focus-visible {
       outline: 3px solid #e88468;
       outline-offset: 3px;
     }
@@ -402,12 +422,30 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
       margin-top: auto;
       padding-top: 18px;
     }
 
-    .quiet-hint { margin: 0; color: #78837a; font-size: 11px; }
+    .joker-actions { gap: 6px; }
+    .joker-button {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      flex: none;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--green-dark);
+      background: #f7f8f1;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .joker-button[data-joker="half"] { font-size: 10px; }
+    .joker-button:hover:not(:disabled) { border-color: #8ca78e; background: #edf1e4; }
+    .joker-button:disabled { color: #9ba49b; background: #f1f2ed; cursor: not-allowed; }
 
     .next-button, .restart-button {
       min-height: 44px;
@@ -489,7 +527,16 @@
       .quiz-area { padding-right: 16px; padding-left: 16px; }
       .answer { grid-template-columns: 30px 1fr 16px; gap: 9px; padding-right: 10px; padding-left: 10px; }
       .answer-text { font-size: 13px; }
-      .quiet-hint { max-width: 130px; line-height: 1.4; }
+      .joker-actions { gap: 4px; }
+      .joker-button { width: 36px; height: 36px; }
+      .joker-button[data-joker="half"] { font-size: 9px; }
+    }
+
+    @media (max-width: 340px) {
+      .joker-button { width: 32px; height: 34px; }
+      .quiz-status { gap: 4px; }
+      .score-chip { padding: 6px; }
+      .joker-remaining { display: none; }
     }
 
     @media (max-width: 760px) and (max-height: 720px) {
@@ -534,7 +581,15 @@
         <div id="quiz-view">
           <div class="quiz-topline">
             <span id="progress-label">Frage 1 von 100</span>
-            <span class="score-chip" id="score-label">0 richtig</span>
+            <div class="quiz-status">
+              <span class="score-chip" id="score-label">0 richtig</span>
+              <div class="joker-choice" role="group" aria-label="Anzahl der Joker auswählen">
+                <span class="joker-caption">Joker</span>
+                <button class="joker-count-button" type="button" data-joker-count="3" aria-label="Drei Joker verwenden" aria-pressed="true" title="Drei Joker verwenden">3</button>
+                <button class="joker-count-button" type="button" data-joker-count="4" aria-label="Vier Joker verwenden" aria-pressed="false" title="Vier Joker verwenden">4</button>
+              </div>
+              <span class="joker-remaining" id="joker-remaining">3 übrig</span>
+            </div>
           </div>
           <div class="progress-track" role="progressbar" aria-label="Quizfortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
             <div class="progress-fill" id="progress-fill"></div>
@@ -544,7 +599,12 @@
           <div class="answers" id="answers" role="group" aria-labelledby="question-text"></div>
           <div class="feedback" id="feedback" aria-live="polite"></div>
           <div class="quiz-footer">
-            <p class="quiet-hint">Welche Rasse erkennst du?</p>
+            <div class="joker-actions" role="group" aria-label="Joker">
+              <button class="joker-button" type="button" data-joker="half" aria-label="50:50: eine falsche Antwort ausblenden" title="50:50: Eine falsche Antwort ausblenden" disabled>50:50</button>
+              <button class="joker-button" type="button" data-joker="hint" aria-label="Hinweis mit den Anfangsbuchstaben anzeigen" title="Hinweis: Anfangsbuchstaben zeigen" disabled>?</button>
+              <button class="joker-button" type="button" data-joker="skip" aria-label="Frage überspringen" title="Frage überspringen" disabled>»</button>
+              <button class="joker-button" type="button" data-joker="retry" aria-label="Einen Extra-Versuch erhalten" title="Extra-Versuch: noch einmal raten" disabled>+1</button>
+            </div>
             <button class="next-button" id="next-button" type="button" disabled>Weiter <span aria-hidden="true">→</span></button>
           </div>
         </div>
@@ -710,10 +770,16 @@
     const answersElement = document.querySelector("#answers");
     const feedback = document.querySelector("#feedback");
     const nextButton = document.querySelector("#next-button");
+    const jokerRemaining = document.querySelector("#joker-remaining");
+    const jokerCountButtons = [...document.querySelectorAll("[data-joker-count]")];
+    const jokerButtons = [...document.querySelectorAll("[data-joker]")];
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
     let photoLoaded = false;
+    let jokerLimit = 3;
+    let extraTryArmed = false;
+    const usedJokers = new Set();
 
     photoTrigger.addEventListener("click", () => {
       fullscreenPhoto.src = dogPhoto.currentSrc || dogPhoto.src;
@@ -726,6 +792,55 @@
       if (event.target === photoDialog) photoDialog.close();
     });
     photoDialog.addEventListener("close", () => photoTrigger.focus({ preventScroll: true }));
+
+    jokerCountButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        if (usedJokers.size > 0) return;
+        jokerLimit = Number(button.dataset.jokerCount);
+        updateJokerControls();
+      });
+    });
+
+    jokerButtons.forEach(button => {
+      button.addEventListener("click", () => useJoker(button.dataset.joker));
+    });
+
+    function updateJokerControls() {
+      jokerRemaining.textContent = `${jokerLimit - usedJokers.size} übrig`;
+      jokerCountButtons.forEach(button => {
+        button.setAttribute("aria-pressed", String(Number(button.dataset.jokerCount) === jokerLimit));
+        button.disabled = usedJokers.size > 0;
+      });
+      jokerButtons.forEach(button => {
+        button.disabled = !photoLoaded || answered || usedJokers.has(button.dataset.joker) || usedJokers.size >= jokerLimit;
+      });
+    }
+
+    function useJoker(type) {
+      if (!photoLoaded || answered || usedJokers.has(type) || usedJokers.size >= jokerLimit) return;
+      usedJokers.add(type);
+      const question = questions[currentQuestion];
+
+      if (type === "half") {
+        const wrongAnswers = [...answersElement.children].filter((button, index) => index !== question.correct && !button.hidden);
+        const removedAnswer = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+        if (removedAnswer) removedAnswer.hidden = true;
+        feedback.textContent = "50:50: Eine falsche Antwort wurde ausgeblendet.";
+      } else if (type === "hint") {
+        const initials = question.breed.split(/[\s-]+/).map(word => word[0]).join(" · ");
+        feedback.textContent = `Hinweis: Die Anfangsbuchstaben lauten ${initials}.`;
+      } else if (type === "skip") {
+        feedback.textContent = "Frage übersprungen.";
+        updateJokerControls();
+        advanceQuestion();
+        return;
+      } else if (type === "retry") {
+        extraTryArmed = true;
+        feedback.textContent = "Extra-Versuch aktiv: Bei einer falschen Antwort darfst du noch einmal raten.";
+      }
+
+      updateJokerControls();
+    }
 
     function getBreedImage(path) {
       if (!imageCache.has(path)) {
@@ -757,6 +872,7 @@
         photoStatus.hidden = true;
         photoTrigger.disabled = false;
         [...answersElement.children].forEach(button => { button.disabled = false; });
+        updateJokerControls();
       } catch {
         if (questionIndex !== currentQuestion) return;
         photoStatus.textContent = "Foto nicht verfügbar. Diese Frage kann übersprungen werden.";
@@ -764,6 +880,7 @@
         nextButton.innerHTML = currentQuestion === questions.length - 1
           ? 'Ergebnis ansehen <span aria-hidden="true">→</span>'
           : 'Überspringen <span aria-hidden="true">→</span>';
+        updateJokerControls();
       }
     }
 
@@ -771,6 +888,7 @@
       const question = questions[currentQuestion];
       answered = false;
       photoLoaded = false;
+      extraTryArmed = false;
       progressLabel.textContent = `Frage ${currentQuestion + 1} von ${questions.length}`;
       scoreLabel.textContent = `${score} richtig`;
       progressTrack.setAttribute("aria-valuenow", String(currentQuestion));
@@ -798,14 +916,27 @@
         return button;
       }));
       questionText.focus({ preventScroll: true });
+      updateJokerControls();
       loadQuestionImage(question, currentQuestion);
     }
 
     function chooseAnswer(selectedIndex) {
       if (answered) return;
-      answered = true;
       const question = questions[currentQuestion];
       const isCorrect = selectedIndex === question.correct;
+
+      if (!isCorrect && extraTryArmed) {
+        extraTryArmed = false;
+        const selectedButton = answersElement.children[selectedIndex];
+        selectedButton.disabled = true;
+        selectedButton.classList.add("incorrect");
+        selectedButton.querySelector(".answer-mark").textContent = "×";
+        feedback.textContent = "Nicht ganz. Der Extra-Versuch gibt dir noch eine Antwort.";
+        updateJokerControls();
+        return;
+      }
+
+      answered = true;
       if (isCorrect) score += 1;
 
       [...answersElement.children].forEach((button, index) => {
@@ -824,7 +955,17 @@
       progressTrack.setAttribute("aria-valuenow", String(currentQuestion + 1));
       progressFill.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
       nextButton.disabled = false;
+      updateJokerControls();
       nextButton.focus();
+    }
+
+    function advanceQuestion() {
+      if (currentQuestion === questions.length - 1) {
+        showResult();
+        return;
+      }
+      currentQuestion += 1;
+      renderQuestion();
     }
 
     function showResult() {
@@ -848,21 +989,20 @@
 
     nextButton.addEventListener("click", () => {
       if (!answered && photoLoaded) return;
-      if (currentQuestion === questions.length - 1) {
-        showResult();
-        return;
-      }
-      currentQuestion += 1;
-      renderQuestion();
+      advanceQuestion();
     });
 
     document.querySelector("#restart-button").addEventListener("click", () => {
       currentQuestion = 0;
       score = 0;
+      jokerLimit = 3;
+      extraTryArmed = false;
+      usedJokers.clear();
       questions = createQuestions();
       imageCache.clear();
       resultView.hidden = true;
       quizView.hidden = false;
+      updateJokerControls();
       renderQuestion();
     });
 
