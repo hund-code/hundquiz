@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
@@ -7,6 +7,8 @@
   <title>Pfotenwissen | Hundequiz für Anfänger</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://dog.ceo" crossorigin>
+  <link rel="preconnect" href="https://images.dog.ceo" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -83,7 +85,6 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
-
     .topbar-rank {
       display: inline-flex;
       min-height: 40px;
@@ -104,26 +105,6 @@
     .topbar-rank:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
     .rank-icon { font-size: 17px; line-height: 1; }
 
-    .topbar-auth {
-      display: inline-flex;
-      min-height: 40px;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 0 12px;
-      border: 1px solid #cbd4bd;
-      border-radius: 6px;
-      color: var(--green-dark);
-      background: var(--surface);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .topbar-auth:hover { background: #edf1e4; }
-    .topbar-auth:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
-    .auth-icon { font-size: 17px; line-height: 1; }
-
     main {
       display: grid;
       grid-template-columns: minmax(0, 0.95fr) minmax(380px, 1.05fr);
@@ -135,6 +116,9 @@
       box-shadow: var(--shadow);
       animation: rise-in 550ms ease-out both;
     }
+
+    main.no-intro { grid-template-columns: minmax(0, 1fr); }
+    main.no-intro .intro { display: none; }
 
     .intro {
       position: relative;
@@ -326,6 +310,7 @@
     .start-view { display: flex; flex: 1; flex-direction: column; justify-content: center; }
     .start-view h2 { margin-bottom: 8px; }
     .start-copy { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .daily-stage-status { min-height: 18px; margin: -8px 0 14px; color: var(--green-dark); font-size: 12px; }
     .start-form { max-width: 420px; }
     .start-form label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; }
     .start-form .score-entry { grid-template-columns: minmax(0, 1fr) auto; }
@@ -406,6 +391,8 @@
       gap: 10px;
     }
 
+    .answers.image-answers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
     .answer {
       display: grid;
       width: 100%;
@@ -422,6 +409,24 @@
       cursor: pointer;
       transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
     }
+
+    .answer.image-answer {
+      grid-template-rows: minmax(0, 1fr) 30px;
+      gap: 6px 8px;
+      min-height: 126px;
+      padding: 8px;
+    }
+    .answer-image {
+      width: 100%;
+      height: 96px;
+      grid-column: 1 / -1;
+      grid-row: 1;
+      border-radius: 4px;
+      background: #f4f5f1;
+      object-fit: contain;
+    }
+    .image-answer .answer-key { grid-column: 1; grid-row: 2; }
+    .image-answer .answer-mark { grid-column: 3; grid-row: 2; }
 
     .answer:hover:not(:disabled) {
       transform: translateY(-1px);
@@ -577,10 +582,20 @@
     }
 
     .leaderboard h3 {
+      display: flex;
+      align-items: center;
+      gap: 9px;
       margin: 0 0 10px;
       font-family: Fraunces, Georgia, serif;
       font-size: 20px;
       font-weight: 600;
+    }
+
+    .leaderboard-trophy {
+      width: 34px;
+      height: 34px;
+      flex: none;
+      filter: drop-shadow(0 2px 2px rgb(36 52 45 / 18%));
     }
 
     .score-form { margin-bottom: 10px; }
@@ -651,35 +666,7 @@
       margin-bottom: 12px;
     }
 
-    .leaderboard-dialog-head h2 { margin: 0; font-size: 26px; }
-
-    .auth-dialog {
-      position: fixed;
-      inset: 0;
-      width: min(420px, calc(100% - 32px));
-      max-width: none;
-      max-height: calc(100% - 32px);
-      margin: auto;
-      padding: 22px;
-      overflow: auto;
-      border: 1px solid #d6ded1;
-      border-radius: 10px;
-      color: var(--ink);
-      background: var(--surface);
-      box-shadow: 0 24px 70px rgb(0 0 0 / 28%);
-    }
-
-    .auth-dialog[open] { display: block; }
-    .auth-dialog::backdrop { background: rgb(20 29 24 / 68%); }
-    .auth-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    .auth-dialog-head h2 { margin: 0; font-size: 26px; }
-    .auth-mode { display: flex; gap: 4px; margin-bottom: 16px; padding: 3px; border-radius: 6px; background: #edf1e4; }
-    .auth-mode-button { min-height: 36px; flex: 1; border: 0; border-radius: 4px; color: var(--green-dark); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
-    .auth-mode-button[aria-pressed="true"] { color: white; background: var(--green); }
-    .auth-field { display: block; margin: 0 0 12px; color: var(--muted); font-size: 12px; }
-    .auth-field input { display: block; width: 100%; min-height: 42px; margin-top: 5px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font: inherit; }
-    .auth-status { min-height: 20px; margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
-    .auth-submit { width: 100%; margin-top: 4px; }
+    .leaderboard-dialog-head h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 26px; }
 
     [hidden] { display: none !important; }
 
@@ -703,43 +690,15 @@
       .topbar { flex: none; margin-bottom: 8px; }
       .topbar-qr { width: 48px; height: 48px; }
       .topbar-qr .qr-code { width: 48px; height: 48px; }
-      .topbar-rank { width: 44px; min-height: 44px; padding: 0; font-size: 0; }
-      .rank-icon { font-size: 19px; }
-      .topbar-auth { width: 44px; min-height: 44px; padding: 0; font-size: 0; }
-      .auth-icon { font-size: 19px; }
-      main {
-        min-height: 0;
-        flex: 1;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto minmax(0, 1fr);
-      }
-
-      .intro { min-height: 0; justify-content: center; padding: 8px 16px; }
-      .intro .eyebrow, .intro-note { display: none; }
-      .photo-trigger { margin-top: 0; }
-      .dog-photo { height: clamp(150px, 25svh, 220px); object-position: center 48%; }
-      .quiz-area { min-height: 0; overflow: hidden; padding: 12px 20px; }
-      .quiz-topline { margin-bottom: 8px; }
-      .question-count { margin: 12px 0 6px; }
-      h2 { margin-bottom: 12px; font-size: 24px; }
-      .answers { gap: 8px; }
-      .answer { min-height: 48px; padding: 8px 10px; }
-      .dog-photo { max-height: clamp(130px, 21svh, 180px); }
-      .feedback { min-height: 44px; margin-top: 10px; padding: 8px 10px; }
-      .quiz-footer { padding-top: 8px; }
-      .result-view { justify-content: flex-start; overflow-y: auto; }
-      .leaderboard { margin-top: 12px; }
-      .leaderboard-table-wrap { max-height: 145px; }
-    }
-
-    @media (max-width: 390px) {
-      .page-shell { width: calc(100% - 16px); }
-      .quiz-area { padding-right: 16px; padding-left: 16px; }
-      .answer { grid-template-columns: 30px 1fr 16px; gap: 9px; padding-right: 10px; padding-left: 10px; }
-      .answer-text { font-size: 13px; }
       .joker-actions { gap: 4px; }
       .joker-button { width: 36px; height: 36px; }
+      .answer.image-answer { min-height: 104px; }
+      .answer-image { height: 72px; }
       .joker-button[data-joker="half"] { font-size: 9px; }
+    }
+
+    @media (max-width: 460px) {
+      .level-tag { display: none; }
     }
 
     @media (max-width: 340px) {
@@ -765,6 +724,8 @@
       h2 { margin-bottom: 4px; }
       .answers { gap: 6px; }
       .answer { min-height: 34px; padding: 4px 6px; }
+      .answer.image-answer { min-height: 82px; padding: 4px; }
+      .answer-image { height: 56px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -777,9 +738,6 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Pfotenwissen</span></div>
       <span class="level-tag">Für Anfänger</span>
-      <button class="topbar-auth" id="auth-open" type="button" aria-label="Anmelden oder registrieren" title="Anmelden oder registrieren">
-        <span class="auth-icon" aria-hidden="true">👤</span><span id="auth-open-label">Anmelden</span>
-      </button>
       <button class="topbar-rank" id="leaderboard-open" type="button" aria-label="Rangliste öffnen" title="Rangliste öffnen">
         <span class="rank-icon" aria-hidden="true">🏆</span><span class="rank-label">Rangliste</span>
       </button>
@@ -792,20 +750,21 @@
       <section class="intro" aria-labelledby="page-title">
         <div class="intro-copy">
           <p class="eyebrow">Das Rassen-Rätsel</p>
-          <h1 class="visually-hidden" id="page-title">Hunderassen-Quiz</h1>
+          <h1 class="visually-hidden" id="page-title">Hundequiz</h1>
           <button class="photo-trigger" id="photo-trigger" type="button" aria-label="Hundefoto in Vollbild anzeigen">
             <img class="dog-photo" id="dog-photo" alt="Hund der aktuellen Quizfrage" width="1000" height="700">
             <span class="photo-status" id="photo-status" role="status">Foto wird geladen …</span>
           </button>
         </div>
-        <p class="intro-note"><span class="quiz-note"><span class="note-dot" aria-hidden="true"></span>100 Rassen · ohne Zeitdruck · mit Tipps</span></p>
+        <p class="intro-note"><span class="quiz-note"><span class="note-dot" aria-hidden="true"></span>100 Fragen · Rassen und Hundewissen · mit Tipps</span></p>
       </section>
 
       <section class="quiz-area" aria-label="Hundequiz">
         <section class="start-view" id="start-view" aria-labelledby="start-title">
           <p class="question-count">Willkommen</p>
-          <h2 id="start-title">Rassen erraten</h2>
-          <p class="start-copy">Gib deinen Nickname ein, um zu starten und später deinen Punktestand in der Rangliste einzutragen.</p>
+          <h2 id="start-title">Hundequiz</h2>
+          <p class="start-copy">Gib deinen Nickname ein, um zu starten. Es gibt 100 verschiedene Fragen. Die Stufen mit je zwei Fragen kannst du unbegrenzt spielen.</p>
+          <p class="daily-stage-status" id="daily-stage-status" role="status" aria-live="polite"></p>
           <form class="start-form" id="start-form">
             <label for="nickname">Dein Nickname (2 bis 16 Zeichen, öffentlich sichtbar)</label>
             <div class="score-entry">
@@ -846,7 +805,7 @@
           <p class="result-copy" id="result-copy"></p>
           <p class="score-player">Eintrag als <strong id="leaderboard-player"></strong></p>
           <section class="leaderboard" aria-labelledby="leaderboard-title">
-            <h3 id="leaderboard-title">Top 10 weltweit</h3>
+            <h3 id="leaderboard-title"><svg class="leaderboard-trophy" viewBox="0 0 64 64" aria-hidden="true"><path fill="#d89b35" d="M18 8h28v13c0 12-5 19-14 22-9-3-14-10-14-22V8Z"/><path fill="#f2c45e" d="M23 13h18v9c0 8-3 13-9 16-6-3-9-8-9-16v-9Z"/><path fill="none" stroke="#d89b35" stroke-linecap="round" stroke-width="6" d="M18 16H9v6c0 8 5 13 14 14M46 16h9v6c0 8-5 13-14 14"/><path fill="#315d49" d="M28 42h8v9h9v6H19v-6h9z"/></svg><span class="leaderboard-title-text">Top 10 weltweit</span></h3>
             <form class="score-form" id="score-form">
               <button class="score-submit" id="score-submit" type="submit" disabled>Punktzahl eintragen</button>
             </form>
@@ -872,7 +831,7 @@
 
   <dialog class="leaderboard-dialog" id="leaderboard-dialog" aria-labelledby="leaderboard-dialog-title">
     <div class="leaderboard-dialog-head">
-      <h2 id="leaderboard-dialog-title">Top 10 weltweit</h2>
+      <h2 id="leaderboard-dialog-title"><svg class="leaderboard-trophy" viewBox="0 0 64 64" aria-hidden="true"><path fill="#d89b35" d="M18 8h28v13c0 12-5 19-14 22-9-3-14-10-14-22V8Z"/><path fill="#f2c45e" d="M23 13h18v9c0 8-3 13-9 16-6-3-9-8-9-16v-9Z"/><path fill="none" stroke="#d89b35" stroke-linecap="round" stroke-width="6" d="M18 16H9v6c0 8 5 13 14 14M46 16h9v6c0 8-5 13-14 14"/><path fill="#315d49" d="M28 42h8v9h9v6H19v-6h9z"/></svg><span class="leaderboard-title-text">Top 10 weltweit</span></h2>
       <button class="photo-close" id="leaderboard-close" type="button" aria-label="Rangliste schließen">×</button>
     </div>
     <p class="leaderboard-status" id="leaderboard-modal-status" role="status" aria-live="polite"></p>
@@ -885,32 +844,6 @@
     </div>
   </dialog>
 
-  <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-dialog-title">
-    <div class="auth-dialog-head">
-      <h2 id="auth-dialog-title">Konto</h2>
-      <button class="photo-close" id="auth-close" type="button" aria-label="Anmeldung schließen">×</button>
-    </div>
-    <div class="auth-mode" id="auth-mode-switch" role="group" aria-label="Anmeldemodus">
-      <button class="auth-mode-button" id="auth-mode-login" type="button" data-auth-mode="login" aria-pressed="true">Anmelden</button>
-      <button class="auth-mode-button" id="auth-mode-signup" type="button" data-auth-mode="signup" aria-pressed="false">Registrieren</button>
-    </div>
-    <form id="auth-form">
-      <label class="auth-field" id="auth-nickname-field" for="auth-nickname" hidden>Nickname
-        <input id="auth-nickname" name="nickname" type="text" minlength="2" maxlength="16" autocomplete="nickname">
-      </label>
-      <label class="auth-field" for="auth-email">E-Mail-Adresse
-        <input id="auth-email" name="email" type="email" autocomplete="email" required>
-      </label>
-      <label class="auth-field" for="auth-password">Passwort
-        <input id="auth-password" name="password" type="password" minlength="8" autocomplete="current-password" required>
-      </label>
-      <button class="score-submit auth-submit" id="auth-submit" type="submit">Anmelden</button>
-      <p class="auth-status" id="auth-status" role="status" aria-live="polite"></p>
-    </form>
-    <button class="score-submit auth-submit" id="auth-logout" type="button" hidden>Abmelden</button>
-  </dialog>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="leaderboard-config.js"></script>
   <script>
     const breedCatalog = [
@@ -1032,17 +965,124 @@
       "maltese", "shiba", "pomeranian", "doberman"
     ]);
     const beginnerBreeds = breedCatalog.filter(breed => beginnerBreedPaths.has(breed.path));
+    const orderedBreeds = [
+      ...beginnerBreeds,
+      ...breedCatalog.filter(breed => !beginnerBreedPaths.has(breed.path))
+    ];
+
+    const dogKnowledgeQuestions = [
+      {
+        prompt: "Welcher Sinn hilft Hunden besonders dabei, ihre Umgebung zu erkunden?",
+        correct: "Der Geruchssinn",
+        wrong: ["Der Geschmackssinn", "Der Tastsinn", "Der Gleichgewichtssinn"],
+        explanation: "Hunde nehmen viele Informationen über Gerüche auf."
+      },
+      {
+        prompt: "Wie heißt ein Hund, der noch sehr jung ist?",
+        correct: "Welpe",
+        wrong: ["Fohlen", "Kätzchen", "Kalb"],
+        explanation: "Ein junger Hund heißt Welpe."
+      },
+      {
+        prompt: "Was bedeutet es immer, wenn ein Hund mit dem Schwanz wedelt?",
+        correct: "Es bedeutet nicht immer dasselbe; die ganze Körpersprache zählt.",
+        wrong: ["Er ist immer glücklich.", "Er möchte immer spielen.", "Er hat immer Hunger."],
+        explanation: "Achte auf den ganzen Körper und die Situation."
+      },
+      {
+        prompt: "Was sollte man tun, bevor man einen fremden Hund streichelt?",
+        correct: "Erst die Besitzerin oder den Besitzer fragen.",
+        wrong: ["Direkt über den Kopf greifen.", "Laut rufen.", "Dem Hund hinterherlaufen."],
+        explanation: "So kann die Begleitperson sagen, ob der Hund Kontakt möchte."
+      },
+      {
+        prompt: "Womit nehmen Hunde besonders viele Gerüche wahr?",
+        correct: "Mit ihrer Nase",
+        wrong: ["Mit ihren Pfoten", "Mit ihren Ohren", "Mit ihrem Schwanz"],
+        explanation: "Die Nase ist für Hunde ein sehr wichtiges Sinnesorgan."
+      },
+      {
+        prompt: "Was braucht ein Hund täglich?",
+        correct: "Frisches Wasser",
+        wrong: ["Süßigkeiten", "Nur Trockenfutter", "Milch statt Wasser"],
+        explanation: "Frisches Trinkwasser sollte für Hunde bereitstehen."
+      },
+      {
+        prompt: "Was ist ein guter Weg, einem Hund etwas Neues beizubringen?",
+        correct: "In kurzen Einheiten üben und erwünschtes Verhalten belohnen.",
+        wrong: ["Laut schimpfen.", "Den Hund lange allein üben lassen.", "Jeden Tag die Regeln ändern."],
+        explanation: "Ruhiges, regelmäßiges Üben hilft Hunden beim Lernen."
+      },
+      {
+        prompt: "Woran sollte man erkennen, ob ein Hund gerade Kontakt möchte?",
+        correct: "An seiner gesamten Körpersprache und an der Situation.",
+        wrong: ["Nur an seiner Fellfarbe.", "Nur daran, ob er bellt.", "Nur an der Größe seiner Pfoten."],
+        explanation: "Körpersprache sollte immer im Zusammenhang betrachtet werden."
+      },
+      {
+        prompt: "Was ist ein Mikrochip bei einem Hund?",
+        correct: "Eine Kennzeichnung, mit der der Hund identifiziert werden kann.",
+        wrong: ["Ein Gerät, das den Hund per GPS ortet.", "Ein Ersatz für Wasser.", "Ein Spielzeug im Halsband."],
+        explanation: "Ein Mikrochip speichert eine Kennnummer und ist kein GPS-Sender."
+      },
+      {
+        prompt: "Warum schnüffelt ein Hund bei einem Spaziergang?",
+        correct: "Er erkundet damit Gerüche und Informationen aus seiner Umgebung.",
+        wrong: ["Weil Hunde dabei ihre Pfoten reinigen.", "Weil Hunde so ihre Ohren kühlen.", "Weil Hunde dadurch schneller laufen."],
+        explanation: "Schnüffeln ist für Hunde eine wichtige Art, ihre Umwelt zu erkunden."
+      },
+      {
+        prompt: "Was ist bei warmem Wetter für einen Hund besonders wichtig?",
+        correct: "Zugang zu Wasser und einem kühlen, schattigen Platz.",
+        wrong: ["Lange in einem heißen Auto zu warten.", "Auf heißem Asphalt zu laufen.", "Kein Wasser zu trinken."],
+        explanation: "Hunde brauchen bei Wärme Schutz vor Überhitzung."
+      },
+      {
+        prompt: "Was sollte man tun, wenn ein Hund Abstand sucht?",
+        correct: "Ihm Raum geben und ihn nicht bedrängen.",
+        wrong: ["Ihm den Weg versperren.", "Ihn festhalten.", "Ihm direkt ins Gesicht fassen."],
+        explanation: "Ein Hund sollte sich zurückziehen dürfen, wenn er Abstand möchte."
+      }
+    ];
 
     function createQuestions() {
-      const orderedBreeds = [
-        ...shuffle(beginnerBreeds),
-        ...shuffle(breedCatalog.filter(breed => !beginnerBreedPaths.has(breed.path)))
-      ];
-      return orderedBreeds.map(breed => {
-        const otherBreeds = shuffle(beginnerBreeds.filter(candidate => candidate !== breed)).slice(0, 3);
+      let visualQuestionIndex = 0;
+      return orderedBreeds.map((breed, index) => {
+        if ((index + 1) % 5 === 0) {
+          const fact = dogKnowledgeQuestions[Math.floor(index / 5) % dogKnowledgeQuestions.length];
+          const answers = shuffle([fact.correct, ...fact.wrong]);
+          return {
+            type: "knowledge",
+            breed: fact.correct,
+            prompt: fact.prompt,
+            answers,
+            correct: answers.indexOf(fact.correct),
+            explanation: fact.explanation
+          };
+        }
+
+        if (visualQuestionIndex % 2 === 1) {
+          const otherBreeds = shuffle(orderedBreeds.filter(candidate => candidate !== breed)).slice(0, 3);
+          const options = shuffle([breed, ...otherBreeds]);
+          visualQuestionIndex += 1;
+          return {
+            type: "reverse",
+            breed: breed.name,
+            prompt: `Welches Foto zeigt die Rasse ${breed.name}?`,
+            answers: options.map(option => option.name),
+            imagePaths: options.map(option => option.path),
+            correct: options.indexOf(breed),
+            explanation: "Gut erkannt! Jede Rasse sieht ein wenig anders aus."
+          };
+        }
+
+        const otherBreeds = shuffle(orderedBreeds.filter(candidate => candidate !== breed)).slice(0, 3);
         const options = shuffle([breed, ...otherBreeds]);
+        visualQuestionIndex += 1;
         return {
+          type: "breed",
           breed: breed.name,
+          prompt: "Zu welcher Rasse gehört dieser Hund?",
           imagePath: breed.path,
           answers: options.map(option => option.name),
           correct: options.indexOf(breed),
@@ -1050,7 +1090,6 @@
         };
       });
     }
-
     const imageCache = new Map();
     let questions = createQuestions();
 
@@ -1086,171 +1125,75 @@
     const leaderboardRows = document.querySelector("#leaderboard-rows");
     const leaderboardStatus = document.querySelector("#leaderboard-status");
     const leaderboardConfig = window.QUIZ_LEADERBOARD_CONFIG || {};
-    const authDialog = document.querySelector("#auth-dialog");
-    const authDialogTitle = document.querySelector("#auth-dialog-title");
-    const authOpen = document.querySelector("#auth-open");
-    const authOpenLabel = document.querySelector("#auth-open-label");
-    const authForm = document.querySelector("#auth-form");
-    const authNicknameInput = document.querySelector("#auth-nickname");
-    const authNicknameField = document.querySelector("#auth-nickname-field");
-    const authEmailInput = document.querySelector("#auth-email");
-    const authPasswordInput = document.querySelector("#auth-password");
-    const authSubmit = document.querySelector("#auth-submit");
-    const authStatus = document.querySelector("#auth-status");
-    const authLogout = document.querySelector("#auth-logout");
-    const authModeSwitch = document.querySelector("#auth-mode-switch");
-    const authModeButtons = [...document.querySelectorAll("[data-auth-mode]")];
-    const authClient = typeof window.supabase?.createClient === "function"
-      && /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(leaderboardConfig.url || "")
-      && typeof leaderboardConfig.anonKey === "string"
-      && leaderboardConfig.anonKey.length > 20
-      ? window.supabase.createClient(leaderboardConfig.url, leaderboardConfig.anonKey)
-      : null;
     const jokerButtons = [...document.querySelectorAll("[data-joker]")];
+    const QUESTIONS_PER_STAGE = 2;
+    const DAILY_PROGRESS_KEY = "pfotenwissen-daily-progress-v1";
+    const LOCAL_LEADERBOARD_KEY = "pfotenwissen-local-leaderboard-v1";
+    const LOCAL_LEADERBOARD_CLEANUP_KEY = "pfotenwissen-cleaned-lumpi-entries-v1";
+    const SAVED_NICKNAME_KEY = "pfotenwissen-nickname-v1";
+    let activeStageIndex = 0;
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
+    let gameOverPending = false;
     let photoLoaded = false;
     let playerNickname = "";
-    let authSession = null;
-    let authMode = "login";
+    const startButton = startForm.querySelector('button[type="submit"]');
+    const dailyStageStatus = document.querySelector("#daily-stage-status");
+    let dailyProgress = readDailyProgress();
+    try {
+      nicknameInput.value = localStorage.getItem(SAVED_NICKNAME_KEY) || "";
+    } catch {
+      nicknameInput.value = "";
+    }
     const jokerUsesRemaining = { half: 2, hint: 2, skip: 2, retry: 2 };
     let extraTryArmed = false;
     const usedJokersThisQuestion = new Set();
 
-    function setAuthMode(mode) {
-      authMode = mode;
-      const isSignup = mode === "signup";
-      authDialogTitle.textContent = isSignup ? "Konto erstellen" : "Anmelden";
-      authNicknameField.hidden = !isSignup;
-      authNicknameInput.required = isSignup;
-      authPasswordInput.autocomplete = isSignup ? "new-password" : "current-password";
-      authSubmit.textContent = isSignup ? "Registrieren" : "Anmelden";
-      authModeButtons.forEach(button => {
-        button.setAttribute("aria-pressed", String(button.dataset.authMode === mode));
-      });
+    function todayKey() {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     }
 
-    function updateAuthSession(session) {
-      authSession = session;
-      const nickname = session?.user?.user_metadata?.nickname || "";
-      authOpenLabel.textContent = session ? "Konto" : "Anmelden";
-      authOpen.setAttribute("aria-label", session ? "Konto verwalten" : "Anmelden oder registrieren");
-      if (nickname) {
-        playerNickname = nickname;
-        nicknameInput.value = nickname;
-        leaderboardPlayer.textContent = nickname;
-      }
-    }
-
-    function openAuthDialog() {
-      authStatus.textContent = "";
-      if (!authClient) {
-        authModeSwitch.hidden = true;
-        authForm.hidden = true;
-        authLogout.hidden = true;
-        authStatus.textContent = "Anmeldung noch nicht eingerichtet. Die Supabase-Projektwerte fehlen.";
-      } else if (authSession) {
-        authModeSwitch.hidden = true;
-        authForm.hidden = true;
-        authLogout.hidden = false;
-        authStatus.textContent = `Angemeldet als ${authSession.user.email}.`;
-      } else {
-        authModeSwitch.hidden = false;
-        authForm.hidden = false;
-        authLogout.hidden = true;
-        setAuthMode("login");
-      }
-      authDialog.showModal();
-    }
-
-    authOpen.addEventListener("click", openAuthDialog);
-    document.querySelector("#auth-close").addEventListener("click", () => authDialog.close());
-    authDialog.addEventListener("click", event => {
-      if (event.target === authDialog) authDialog.close();
-    });
-    authDialog.addEventListener("close", () => authOpen.focus({ preventScroll: true }));
-    authModeButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        setAuthMode(button.dataset.authMode);
-        authStatus.textContent = "";
-      });
-    });
-
-    authForm.addEventListener("submit", async event => {
-      event.preventDefault();
-      if (!authClient) {
-        authStatus.textContent = "Anmeldung noch nicht eingerichtet. Die Supabase-Projektwerte fehlen.";
-        return;
-      }
-
-      const email = authEmailInput.value.trim();
-      const password = authPasswordInput.value;
-      const nickname = authNicknameInput.value.trim().replace(/\s+/g, " ");
-      if (authMode === "signup" && (nickname.length < 2 || nickname.length > 16)) {
-        authNicknameInput.setCustomValidity("Der Nickname muss 2 bis 16 Zeichen lang sein.");
-        authNicknameInput.reportValidity();
-        return;
-      }
-      authNicknameInput.setCustomValidity("");
-      authSubmit.disabled = true;
-      authStatus.textContent = authMode === "signup" ? "Konto wird angelegt …" : "Anmeldung läuft …";
-
+    function readDailyProgress() {
       try {
-        if (authMode === "signup") {
-          const { data, error } = await authClient.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: window.location.href,
-              data: { nickname }
-            }
-          });
-          if (error) throw error;
-          if (data.session) {
-            updateAuthSession(data.session);
-            authDialog.close();
-          } else {
-            authStatus.textContent = "Konto angelegt. Bitte bestätige zuerst den Link in deiner E-Mail.";
-          }
-        } else {
-          const { data, error } = await authClient.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          updateAuthSession(data.session);
-          authDialog.close();
-        }
-      } catch (error) {
-        authStatus.textContent = error.message || "Anmeldung fehlgeschlagen. Bitte versuche es erneut.";
-      } finally {
-        authSubmit.disabled = false;
+        const saved = JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY) || "{}");
+        return {
+          completedStages: Math.min(Math.floor(Number.MAX_SAFE_INTEGER / QUESTIONS_PER_STAGE), Math.max(0, Math.floor(Number(saved.completedStages) || 0))),
+          totalCorrect: Math.min(2147483647, Math.max(0, Math.floor(Number(saved.totalCorrect) || 0))),
+          lastCompletedDate: typeof saved.lastCompletedDate === "string" ? saved.lastCompletedDate : ""
+        };
+      } catch {
+        return { completedStages: 0, totalCorrect: 0, lastCompletedDate: "" };
       }
-    });
-
-    authLogout.addEventListener("click", async () => {
-      if (!authClient) return;
-      authLogout.disabled = true;
-      const { error } = await authClient.auth.signOut();
-      authLogout.disabled = false;
-      if (error) {
-        authStatus.textContent = error.message;
-        return;
-      }
-      updateAuthSession(null);
-      authDialog.close();
-    });
-
-    if (authClient) {
-      authClient.auth.getSession().then(({ data, error }) => {
-        if (!error) updateAuthSession(data.session);
-      });
-      authClient.auth.onAuthStateChange((_event, session) => updateAuthSession(session));
-    } else {
-      authSubmit.disabled = true;
-      authOpenLabel.textContent = "Konto";
     }
 
-    startForm.addEventListener("submit", event => {
+    function getPlayableStageIndex() {
+      return dailyProgress.completedStages;
+    }
+
+    function updateDailyStageStatus() {
+      dailyStageStatus.textContent = `Stufe ${dailyProgress.completedStages + 1} ist bereit. Du kannst unbegrenzt weiterspielen.`;
+      startButton.disabled = false;
+    }
+
+    function saveDailyProgress() {
+      try {
+        localStorage.setItem(DAILY_PROGRESS_KEY, JSON.stringify(dailyProgress));
+      } catch {
+        dailyStageStatus.textContent = "Der Tagesfortschritt kann in diesem Browser nicht gespeichert werden.";
+      }
+    }
+
+    updateDailyStageStatus();
+    nicknameInput.addEventListener("input", () => nicknameInput.setCustomValidity(""));
+
+    startForm.addEventListener("submit", async event => {
       event.preventDefault();
+      updateDailyStageStatus();
       const nickname = nicknameInput.value.trim().replace(/\s+/g, " ");
       if (nickname.length < 2 || nickname.length > 16) {
         nicknameInput.setCustomValidity("Bitte gib einen Nickname mit 2 bis 16 Zeichen ein.");
@@ -1258,18 +1201,43 @@
         return;
       }
       nicknameInput.setCustomValidity("");
+      startButton.disabled = true;
+      nicknameInput.disabled = true;
+      dailyStageStatus.textContent = "Prüfe, ob der Nickname noch frei ist …";
+      let nicknameAvailable;
+      try {
+        nicknameAvailable = await isNicknameAvailable(nickname);
+      } catch {
+        dailyStageStatus.textContent = "Der Nickname konnte gerade nicht geprüft werden. Bitte versuche es erneut.";
+        return;
+      } finally {
+        startButton.disabled = false;
+        nicknameInput.disabled = false;
+      }
+      if (!nicknameAvailable) {
+        nicknameInput.setCustomValidity("Dieser Nickname ist schon vergeben. Bitte wähle einen anderen.");
+        nicknameInput.reportValidity();
+        dailyStageStatus.textContent = "Dieser Nickname ist schon vergeben. Bitte wähle einen anderen.";
+        return;
+      }
+
       playerNickname = nickname;
+      try {
+        localStorage.setItem(SAVED_NICKNAME_KEY, nickname);
+      } catch {
+        // Keep the chosen nickname for this quiz session even if storage is unavailable.
+      }
       leaderboardPlayer.textContent = playerNickname;
       startView.hidden = true;
       resultView.hidden = true;
       quizView.hidden = false;
-      currentQuestion = 0;
+      activeStageIndex = getPlayableStageIndex();
+      currentQuestion = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
       score = 0;
       Object.keys(jokerUsesRemaining).forEach(type => { jokerUsesRemaining[type] = 2; });
       extraTryArmed = false;
       usedJokersThisQuestion.clear();
       questions = createQuestions();
-      imageCache.clear();
       updateJokerControls();
       renderQuestion();
     });
@@ -1284,15 +1252,84 @@
     function leaderboardHeaders() {
       return {
         apikey: leaderboardConfig.anonKey,
-        Authorization: `Bearer ${authSession?.access_token || leaderboardConfig.anonKey}`
+        Authorization: `Bearer ${leaderboardConfig.anonKey}`
       };
+    }
+
+    async function isNicknameAvailable(nickname) {
+      const normalizedNickname = nickname.trim().toLocaleLowerCase();
+      if (!hasLeaderboardConfig()) {
+        return !readLocalLeaderboard().some(entry =>
+          typeof entry.nickname === "string" && entry.nickname.trim().toLocaleLowerCase() === normalizedNickname
+        );
+      }
+
+      for (let offset = 0; ; offset += 1000) {
+        const query = new URLSearchParams({ select: "nickname", limit: "1000" });
+        const response = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores?${query}`, {
+          headers: { ...leaderboardHeaders(), "Range-Unit": "items", Range: `${offset}-${offset + 999}` }
+        });
+        if (!response.ok) throw new Error("Nickname konnte nicht geprueft werden");
+        const entries = await response.json();
+        if (entries.some(entry => entry.nickname.trim().toLocaleLowerCase() === normalizedNickname)) return false;
+        if (entries.length < 1000) return true;
+      }
+    }
+
+    function readLocalLeaderboard() {
+      try {
+        const entries = JSON.parse(localStorage.getItem(LOCAL_LEADERBOARD_KEY) || "[]");
+        if (!Array.isArray(entries)) return [];
+        if (localStorage.getItem(LOCAL_LEADERBOARD_CLEANUP_KEY) !== "done") {
+          const cleanedEntries = entries.filter(entry =>
+            typeof entry.nickname !== "string" || entry.nickname.trim().toLocaleLowerCase() !== "lumpi"
+          );
+          localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(cleanedEntries));
+          localStorage.setItem(LOCAL_LEADERBOARD_CLEANUP_KEY, "done");
+          return cleanedEntries;
+        }
+        return entries;
+      } catch {
+        return [];
+      }
+    }
+
+    readLocalLeaderboard();
+
+    function renderLeaderboard(entries) {
+      const rows = entries.slice(0, 10).map((entry, index) => {
+        const row = document.createElement("tr");
+        const place = document.createElement("td");
+        const nickname = document.createElement("td");
+        const points = document.createElement("td");
+        place.textContent = String(index + 1);
+        nickname.textContent = entry.nickname;
+        points.textContent = String(entry.score);
+        row.append(place, nickname, points);
+        return row;
+      });
+      leaderboardRows.replaceChildren(...rows);
+      leaderboardModalRows.replaceChildren(...rows.map(row => row.cloneNode(true)));
+    }
+
+    function showLocalLeaderboard() {
+      const entries = readLocalLeaderboard().sort((a, b) =>
+        Number(b.score) - Number(a.score) || String(a.created_at).localeCompare(String(b.created_at))
+      );
+      renderLeaderboard(entries);
+      document.querySelector("#leaderboard-title .leaderboard-title-text").textContent = "Top 10 auf diesem Gerät";
+      document.querySelector("#leaderboard-dialog-title .leaderboard-title-text").textContent = "Top 10 auf diesem Gerät";
+      const status = entries.length
+        ? "Lokale Rangliste: Einträge sind nur auf diesem Gerät sichtbar."
+        : "Noch keine Punktzahlen. Lokale Rangliste: nur auf diesem Gerät sichtbar.";
+      leaderboardStatus.textContent = status;
+      leaderboardModalStatus.textContent = status;
+      scoreSubmit.disabled = !playerNickname;
     }
 
     async function loadLeaderboard() {
       if (!hasLeaderboardConfig()) {
-        leaderboardStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
-        leaderboardModalStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
-        scoreSubmit.disabled = true;
+        showLocalLeaderboard();
         return;
       }
 
@@ -1305,41 +1342,43 @@
         });
         if (!response.ok) throw new Error("Rangliste konnte nicht geladen werden");
         const entries = await response.json();
-        const rows = entries.map((entry, index) => {
-          const row = document.createElement("tr");
-          const place = document.createElement("td");
-          const nickname = document.createElement("td");
-          const points = document.createElement("td");
-          place.textContent = String(index + 1);
-          nickname.textContent = entry.nickname;
-          points.textContent = String(entry.score);
-          row.append(place, nickname, points);
-          return row;
-        });
-        leaderboardRows.replaceChildren(...rows);
-        leaderboardModalRows.replaceChildren(...rows.map(row => row.cloneNode(true)));
+        renderLeaderboard(entries);
+        document.querySelector("#leaderboard-title .leaderboard-title-text").textContent = "Top 10 weltweit";
+        document.querySelector("#leaderboard-dialog-title .leaderboard-title-text").textContent = "Top 10 weltweit";
         leaderboardStatus.textContent = entries.length ? "" : "Noch keine Punktzahlen eingetragen.";
         leaderboardModalStatus.textContent = entries.length ? "" : "Noch keine Punktzahlen eingetragen.";
         scoreSubmit.disabled = false;
       } catch {
-        leaderboardStatus.textContent = "Rangliste gerade nicht erreichbar. Versuch es später erneut.";
-        leaderboardModalStatus.textContent = "Rangliste gerade nicht erreichbar. Versuch es später erneut.";
-        scoreSubmit.disabled = false;
+        showLocalLeaderboard();
+        leaderboardStatus.textContent = "Online-Rangliste nicht erreichbar. Es wird die lokale Rangliste dieses Geräts angezeigt.";
+        leaderboardModalStatus.textContent = leaderboardStatus.textContent;
       }
     }
 
     scoreForm.addEventListener("submit", async event => {
       event.preventDefault();
       if (!hasLeaderboardConfig()) {
-        leaderboardStatus.textContent = "Die gemeinsame Rangliste ist noch nicht eingerichtet.";
+        const entries = readLocalLeaderboard();
+        const normalizedNickname = playerNickname.trim().toLocaleLowerCase();
+        if (entries.some(entry => entry.nickname.trim().toLocaleLowerCase() === normalizedNickname)) {
+          leaderboardStatus.textContent = "Dieser Nickname ist schon in der Rangliste vergeben.";
+          return;
+        }
+        entries.push({
+          nickname: playerNickname,
+          score: dailyProgress.totalCorrect,
+          created_at: new Date().toISOString()
+        });
+        try {
+          localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(entries));
+          loadLeaderboard();
+          leaderboardStatus.textContent = "Punktzahl lokal eingetragen. Nur auf diesem Gerät sichtbar.";
+          leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+        } catch {
+          leaderboardStatus.textContent = "Punktzahl konnte auf diesem Gerät nicht gespeichert werden.";
+        }
         return;
       }
-      if (!authSession) {
-        leaderboardStatus.textContent = "Bitte melde dich an, um deine Punktzahl einzutragen.";
-        openAuthDialog();
-        return;
-      }
-
       scoreSubmit.disabled = true;
       leaderboardStatus.textContent = "Punktzahl wird eingetragen …";
       try {
@@ -1350,8 +1389,13 @@
             "Content-Type": "application/json",
             Prefer: "return=minimal"
           },
-          body: JSON.stringify({ nickname: playerNickname, score, user_id: authSession.user.id })
+          body: JSON.stringify({ nickname: playerNickname, score: dailyProgress.totalCorrect })
         });
+        if (response.status === 409) {
+          leaderboardStatus.textContent = "Dieser Nickname wurde gerade von jemand anderem vergeben.";
+          scoreSubmit.disabled = false;
+          return;
+        }
         if (!response.ok) throw new Error("Punktzahl konnte nicht gespeichert werden");
         leaderboardStatus.textContent = "Punktzahl eingetragen.";
         await loadLeaderboard();
@@ -1370,10 +1414,6 @@
         event.preventDefault();
         leaderboardStatus.textContent = "Bitte starte das Quiz zuerst mit einem Nickname.";
         return;
-      }
-      if (!authSession) {
-        event.preventDefault();
-        leaderboardStatus.textContent = "Bitte melde dich an, um deine Punktzahl einzutragen.";
       }
     }, { capture: true });
 
@@ -1418,7 +1458,7 @@
       if (!photoLoaded || answered || usedJokersThisQuestion.has(type) || jokerUsesRemaining[type] === 0) return;
       usedJokersThisQuestion.add(type);
       jokerUsesRemaining[type] -= 1;
-      const question = questions[currentQuestion];
+      const question = questions[currentQuestion % questions.length];
 
       if (type === "half") {
         const wrongAnswers = [...answersElement.children].filter((button, index) => index !== question.correct && !button.hidden);
@@ -1442,7 +1482,7 @@
 
     function getBreedImage(path) {
       if (!imageCache.has(path)) {
-        const imageRequest = fetch(`https://dog.ceo/api/breed/${path}/images/random`)
+        const imageRequest = fetch(`https://dog.ceo/api/breed/${path}/images/random`, { signal: AbortSignal.timeout(12000) })
           .then(response => {
             if (!response.ok) throw new Error("Bildquelle nicht erreichbar");
             return response.json();
@@ -1458,24 +1498,54 @@
 
     async function loadQuestionImage(question, questionIndex) {
       try {
-        const imageUrl = await getBreedImage(question.imagePath);
-        const image = new Image();
-        image.src = imageUrl;
-        await image.decode();
+        if (question.type === "knowledge") {
+          if (questionIndex !== currentQuestion) return;
+          photoLoaded = true;
+          [...answersElement.children].forEach(button => { button.disabled = false; });
+          updateJokerControls();
+          return;
+        }
+
+        const imagePaths = question.type === "reverse" ? question.imagePaths : [question.imagePath];
+        let timeoutId;
+        const imageLoad = (async () => {
+          const images = question.type === "reverse"
+            ? [...answersElement.querySelectorAll(".answer-image")]
+            : [dogPhoto];
+          await Promise.all(imagePaths.map(async (path, index) => {
+            const imageUrl = await getBreedImage(path);
+            if (questionIndex !== currentQuestion) return;
+            const image = images[index];
+            image.decoding = "async";
+            image.src = imageUrl;
+            if (question.type !== "reverse") {
+              image.alt = `Hundefoto zu Frage ${questionIndex + 1}`;
+              photoStatus.hidden = true;
+              photoTrigger.disabled = false;
+            }
+            await image.decode();
+          }));
+        })();
+        await Promise.race([
+          imageLoad,
+          new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error("Bild lädt zu lange")), 12000);
+          })
+        ]).finally(() => clearTimeout(timeoutId));
         if (questionIndex !== currentQuestion) return;
 
-        dogPhoto.src = imageUrl;
-        dogPhoto.alt = `Hundefoto zu Frage ${questionIndex + 1}`;
         photoLoaded = true;
-        photoStatus.hidden = true;
-        photoTrigger.disabled = false;
         [...answersElement.children].forEach(button => { button.disabled = false; });
         updateJokerControls();
       } catch {
         if (questionIndex !== currentQuestion) return;
-        photoStatus.textContent = "Foto nicht verfügbar. Diese Frage kann übersprungen werden.";
+        if (question.type === "reverse") {
+          feedback.textContent = "Die Bilder konnten nicht geladen werden. Du kannst die Frage überspringen.";
+        } else {
+          photoStatus.textContent = "Foto konnte nicht geladen werden. Bitte Internetverbindung prüfen oder Frage überspringen.";
+        }
         nextButton.disabled = false;
-        nextButton.innerHTML = currentQuestion === questions.length - 1
+        nextButton.innerHTML = currentQuestion % QUESTIONS_PER_STAGE === QUESTIONS_PER_STAGE - 1
           ? 'Ergebnis ansehen <span aria-hidden="true">→</span>'
           : 'Überspringen <span aria-hidden="true">→</span>';
         updateJokerControls();
@@ -1483,17 +1553,25 @@
     }
 
     function renderQuestion() {
-      const question = questions[currentQuestion];
+      const question = questions[currentQuestion % questions.length];
+      const stageNumber = activeStageIndex + 1;
+      const questionInStage = currentQuestion % QUESTIONS_PER_STAGE + 1;
       answered = false;
+      gameOverPending = false;
       photoLoaded = false;
       extraTryArmed = false;
       usedJokersThisQuestion.clear();
-      progressLabel.textContent = `Frage ${currentQuestion + 1} von ${questions.length}`;
+      progressLabel.textContent = `Stufe ${stageNumber} · Frage ${questionInStage} von ${QUESTIONS_PER_STAGE}`;
       scoreLabel.textContent = `${score} richtig`;
-      progressTrack.setAttribute("aria-valuenow", String(currentQuestion));
-      progressFill.style.width = `${(currentQuestion / questions.length) * 100}%`;
-      categoryLabel.textContent = `Rasse ${currentQuestion + 1}`;
-      questionText.textContent = "Zu welcher Rasse gehört dieser Hund?";
+      progressTrack.setAttribute("aria-valuenow", String(currentQuestion % questions.length));
+      progressFill.style.width = `${((currentQuestion % questions.length) / questions.length) * 100}%`;
+      categoryLabel.textContent = question.type === "knowledge"
+        ? "Hundewissen"
+        : question.type === "reverse" ? "Rasse im Bild finden" : `Rasse ${(currentQuestion % questions.length) + 1}`;
+      questionText.textContent = question.prompt;
+      document.querySelector(".intro-copy .eyebrow").textContent = question.type === "knowledge" ? "Hundewissen" : "Das Rassen-Rätsel";
+      document.querySelector("main").classList.toggle("no-intro", question.type !== "breed");
+      photoTrigger.hidden = question.type !== "breed";
       dogPhoto.removeAttribute("src");
       dogPhoto.alt = "Hundefoto wird geladen";
       photoTrigger.disabled = true;
@@ -1501,16 +1579,32 @@
       photoStatus.textContent = "Foto wird geladen …";
       feedback.textContent = "";
       nextButton.disabled = true;
-      nextButton.innerHTML = currentQuestion === questions.length - 1
-        ? 'Ergebnis ansehen <span aria-hidden="true">→</span>'
+      nextButton.innerHTML = questionInStage === QUESTIONS_PER_STAGE
+        ? 'Stufe abschließen <span aria-hidden="true">→</span>'
         : 'Weiter <span aria-hidden="true">→</span>';
+      answersElement.classList.toggle("image-answers", question.type === "reverse");
       answersElement.replaceChildren(...question.answers.map((answer, index) => {
         const button = document.createElement("button");
-        button.className = "answer";
+        button.className = question.type === "reverse" ? "answer image-answer" : "answer";
         button.type = "button";
         button.disabled = true;
-        button.innerHTML = `<span class="answer-key">${String.fromCharCode(65 + index)}</span><span class="answer-text"></span><span class="answer-mark" aria-hidden="true"></span>`;
-        button.querySelector(".answer-text").textContent = answer;
+        const answerKey = document.createElement("span");
+        answerKey.className = "answer-key";
+        answerKey.textContent = String.fromCharCode(65 + index);
+        const answerMark = document.createElement("span");
+        answerMark.className = "answer-mark";
+        answerMark.setAttribute("aria-hidden", "true");
+        if (question.type === "reverse") {
+          const image = document.createElement("img");
+          image.className = "answer-image";
+          image.alt = `Hundefoto, Auswahl ${String.fromCharCode(65 + index)}`;
+          button.append(answerKey, image, answerMark);
+        } else {
+          const answerText = document.createElement("span");
+          answerText.className = "answer-text";
+          answerText.textContent = answer;
+          button.append(answerKey, answerText, answerMark);
+        }
         button.addEventListener("click", () => chooseAnswer(index));
         return button;
       }));
@@ -1518,10 +1612,9 @@
       updateJokerControls();
       loadQuestionImage(question, currentQuestion);
     }
-
     function chooseAnswer(selectedIndex) {
       if (answered) return;
-      const question = questions[currentQuestion];
+      const question = questions[currentQuestion % questions.length];
       const isCorrect = selectedIndex === question.correct;
 
       if (!isCorrect && extraTryArmed) {
@@ -1549,14 +1642,17 @@
         }
       });
 
-      feedback.innerHTML = `<strong>${isCorrect ? "Richtig!" : `Das ist ein ${question.breed}.`}</strong> ${question.explanation}`;
+      feedback.innerHTML = `<strong>${isCorrect ? "Richtig!" : `Falsch! Die richtige Antwort ist: ${question.breed}.`}</strong> ${question.explanation}`;
       scoreLabel.textContent = `${score} richtig`;
-      progressTrack.setAttribute("aria-valuenow", String(currentQuestion + 1));
-      progressFill.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+      progressTrack.setAttribute("aria-valuenow", String((currentQuestion + 1) % questions.length));
+      progressFill.style.width = `${(((currentQuestion + 1) % questions.length) / questions.length) * 100}%`;
       updateJokerControls();
 
       if (!isCorrect) {
-        showGameOver();
+        gameOverPending = true;
+        nextButton.disabled = false;
+        nextButton.innerHTML = 'Ergebnis ansehen <span aria-hidden="true">→</span>';
+        nextButton.focus();
         return;
       }
 
@@ -1565,7 +1661,14 @@
     }
 
     function advanceQuestion() {
-      if (currentQuestion === questions.length - 1) {
+      if ((currentQuestion + 1) % QUESTIONS_PER_STAGE === 0) {
+        if (activeStageIndex === dailyProgress.completedStages) {
+          dailyProgress.completedStages += 1;
+          dailyProgress.totalCorrect = Math.min(2147483647, dailyProgress.totalCorrect + score);
+          dailyProgress.lastCompletedDate = todayKey();
+          saveDailyProgress();
+          updateDailyStageStatus();
+        }
         showResult();
         return;
       }
@@ -1576,19 +1679,11 @@
     function showResult() {
       quizView.hidden = true;
       resultView.hidden = false;
-      document.querySelector("#result-score").textContent = `${score}/${questions.length}`;
+      document.querySelector("#result-score").textContent = `${score}/${QUESTIONS_PER_STAGE}`;
       const title = document.querySelector("#result-title");
       const copy = document.querySelector("#result-copy");
-      if (score === questions.length) {
-        title.textContent = "Richtig stark!";
-        copy.textContent = "Du hast alle Hunderassen erkannt. Dein Rassenwissen ist wirklich beeindruckend.";
-      } else if (score >= 75) {
-        title.textContent = "Gutes Rassenwissen!";
-        copy.textContent = "Du hast schon viele Rassen erkannt. Mit den kurzen Tipps lernst du noch ein paar spannende Merkmale dazu.";
-      } else {
-        title.textContent = "Ein guter Anfang!";
-        copy.textContent = "Einige Rassen sehen sich ganz schön ähnlich. Spiel gern noch einmal und achte auf Fell, Körperform und Ohren.";
-      }
+      title.textContent = `Stufe ${activeStageIndex + 1} geschafft!`;
+      copy.textContent = `Du hast ${score} von ${QUESTIONS_PER_STAGE} Fragen richtig. Stufe ${dailyProgress.completedStages + 1} ist bereit; du kannst direkt weiterspielen.`;
       loadLeaderboard();
       title.focus({ preventScroll: true });
     }
@@ -1596,36 +1691,44 @@
     function showGameOver() {
       quizView.hidden = true;
       resultView.hidden = false;
-      document.querySelector("#result-score").textContent = `${score}/${questions.length}`;
+      document.querySelector("#result-score").textContent = `${score}/${QUESTIONS_PER_STAGE}`;
       const title = document.querySelector("#result-title");
-      title.textContent = "Spiel vorbei";
-      document.querySelector("#result-copy").textContent = `Frage ${currentQuestion + 1} war leider falsch. Starte neu und versuche es noch einmal.`;
+      title.textContent = `Richtig ist: ${questions[currentQuestion % questions.length].breed}`;
+      document.querySelector("#result-copy").textContent = `Diese Stufe hast du nicht geschafft. Du kannst sie jederzeit noch einmal versuchen.`;
       loadLeaderboard();
       title.focus({ preventScroll: true });
     }
 
     nextButton.addEventListener("click", () => {
       if (!answered && photoLoaded) return;
+      if (gameOverPending) {
+        showGameOver();
+        return;
+      }
       advanceQuestion();
     });
 
     document.querySelector("#restart-button").addEventListener("click", () => {
-      currentQuestion = 0;
+      activeStageIndex = getPlayableStageIndex();
+      currentQuestion = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
       score = 0;
       Object.keys(jokerUsesRemaining).forEach(type => { jokerUsesRemaining[type] = 2; });
       extraTryArmed = false;
       usedJokersThisQuestion.clear();
       questions = createQuestions();
-      imageCache.clear();
       resultView.hidden = true;
       quizView.hidden = true;
       startView.hidden = false;
       nicknameInput.value = playerNickname;
+      updateDailyStageStatus();
       updateJokerControls();
       nicknameInput.focus({ preventScroll: true });
     });
 
-    loadQuestionImage(questions[0], 0);
+    activeStageIndex = getPlayableStageIndex();
+    const previewQuestionIndex = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
+    currentQuestion = previewQuestionIndex;
+    loadQuestionImage(questions[previewQuestionIndex], previewQuestionIndex);
   </script>
 </body>
 </html>

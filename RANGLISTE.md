@@ -3,10 +3,9 @@
 Die Rangliste speichert nur Nickname, Punktzahl und Zeitpunkt. Nicknames sind öffentlich sichtbar. Keine echten Namen, E-Mail-Adressen oder anderen persönlichen Daten eintragen.
 
 1. Ein kostenloses Supabase-Projekt erstellen.
-2. Unter Authentication die E-Mail-Anmeldung aktiviert lassen. E-Mail-Bestätigung kann eingeschaltet bleiben.
-3. Im SQL Editor den Inhalt von `leaderboard-schema.sql` ausführen.
-4. Unter Project Settings > API die Project URL und den `anon`/publishable key kopieren. Niemals den `service_role`-Key in die Website eintragen.
-5. Die Werte in `leaderboard-config.js` eintragen:
+2. Im SQL Editor den Inhalt von `leaderboard-schema.sql` ausführen.
+3. Unter Project Settings > API die Project URL und den `anon`/publishable key kopieren. Niemals den `service_role`-Key in die Website eintragen.
+4. Die Werte in `leaderboard-config.js` eintragen:
 
 ```js
 window.QUIZ_LEADERBOARD_CONFIG = {
@@ -15,8 +14,14 @@ window.QUIZ_LEADERBOARD_CONFIG = {
 };
 ```
 
-6. `leaderboard-config.js`, `index.html` und `leaderboard-schema.sql` committen und nach `master` pushen. GitHub Pages veröffentlicht die Änderungen automatisch.
+5. `leaderboard-config.js`, `index.html` und `leaderboard-schema.sql` committen und nach `master` pushen. GitHub Pages veröffentlicht die Änderungen automatisch.
 
-Der Knopf oben rechts öffnet Registrierung und Anmeldung. Nach der Anmeldung wird die Punktzahl mit der Nutzer-ID gespeichert; die Top 10 mit Nickname und Punktzahl sind öffentlich lesbar. Jeder angemeldete Nutzer kann nur neue eigene Einträge hinzufügen, keine Einträge ändern oder löschen.
+Es gibt keine Konten. Jeder Nickname darf nur einmal verwendet werden; Groß- und Kleinschreibung zählt dabei nicht. Nickname und Punktzahl erscheinen öffentlich in der Top 10. Anonyme Spieler können Einträge hinzufügen, aber nicht ändern oder löschen.
 
-Supabase bestätigt neue Konten je nach Projekteinstellung per E-Mail. Die öffentliche Rangliste prüft nicht serverseitig, ob eine Punktzahl ehrlich erspielt wurde; das wäre für einen manipulationssicheren Wettbewerb zusätzlich nötig.
+Der Fortschritt der unbegrenzt vielen Stufen wird lokal im Browser gespeichert und nicht zwischen Geräten synchronisiert. Die Fragen wiederholen sich nach den ersten 100 Fragen.
+
+Beim ersten Laden nach diesem Update werden alte lokale Ranglisteneinträge namens Lumpi einmalig entfernt. Danach kann der Name wieder einmal vergeben werden. Der zuletzt gewählte Nickname wird lokal gespeichert und beim nächsten Besuch vorausgefüllt.
+
+Wenn du die Online-Rangliste schon eingerichtet hast, führe `leaderboard-schema.sql` erneut aus. Das Schema verhindert doppelte Nicknames auch dann, wenn sie sich nur durch Groß- und Kleinschreibung unterscheiden, und erlaubt Gesamtpunktzahlen über 100. Falls es bereits doppelte Nicknames in der Datenbank gibt, muessen diese vor dem Anlegen des eindeutigen Indexes bereinigt werden.
+
+Wenn die doppelten Einträge in Supabase stehen, führe zuerst `leaderboard-remove-lumpi.sql` einmal aus. Danach `leaderboard-schema.sql` ausführen, damit keine doppelten Nicknames mehr gespeichert werden können. Das Löschskript entfernt alle bisherigen Schreibweisen von `Lumpi`.
