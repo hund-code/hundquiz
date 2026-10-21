@@ -489,6 +489,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 8px;
       margin-top: auto;
       padding-top: 18px;
@@ -543,6 +544,21 @@
     .joker-button[data-joker="half"] { font-size: 10px; }
     .joker-button:hover:not(:disabled) { border-color: #8ca78e; background: #edf1e4; }
     .joker-button:disabled { color: #9ba49b; background: #f1f2ed; cursor: not-allowed; }
+
+    .save-progress-button {
+      min-height: 40px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--green-dark);
+      background: #f7f8f1;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .save-progress-button:hover:not(:disabled) { border-color: #8ca78e; background: #edf1e4; }
+    .save-progress-button:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+    .save-progress-button:disabled { color: #9ba49b; background: #f1f2ed; cursor: not-allowed; }
 
     .next-button, .restart-button {
       min-height: 44px;
@@ -794,6 +810,7 @@
               <button class="joker-button" type="button" data-joker="half" aria-label="50:50: zwei falsche Antworten ausblenden" title="50:50: Zwei falsche Antworten ausblenden" disabled>50:50<span class="joker-use-count" aria-hidden="true">1</span></button>
               <button class="joker-button" type="button" data-joker="retry" aria-label="Einen Extra-Versuch erhalten" title="+1: noch einmal raten" disabled>+1<span class="joker-use-count" aria-hidden="true">1</span></button>
             </div>
+            <button class="save-progress-button" id="save-progress-button" type="button">Spielstand speichern</button>
             <button class="next-button" id="next-button" type="button" disabled>Weiter <span aria-hidden="true">→</span></button>
           </div>
         </div>
@@ -1116,6 +1133,7 @@
     const feedback = document.querySelector("#feedback");
     const nextButton = document.querySelector("#next-button");
     const jokerRemaining = document.querySelector("#joker-remaining");
+    const saveProgressButton = document.querySelector("#save-progress-button");
     const leaderboardRows = document.querySelector("#leaderboard-rows");
     const leaderboardStatus = document.querySelector("#leaderboard-status");
     const leaderboardConfig = window.QUIZ_LEADERBOARD_CONFIG || {};
@@ -1123,6 +1141,7 @@
     const QUESTIONS_PER_STAGE = 10;
     const SAVED_STAGE_SIZE_KEY = "pfotenwissen-stage-size-v1";
     const DAILY_PROGRESS_KEY = "pfotenwissen-daily-progress-v1";
+    const SAVED_RUN_KEY = "pfotenwissen-saved-run-v1";
     const LOCAL_LEADERBOARD_KEY = "pfotenwissen-local-leaderboard-v1";
     const SAVED_NICKNAME_KEY = "pfotenwissen-nickname-v1";
     let activeStageIndex = 0;
@@ -1138,12 +1157,16 @@
     const resetProgressButton = document.querySelector("#reset-progress-button");
     const dailyStageStatus = document.querySelector("#daily-stage-status");
     let dailyProgress = readDailyProgress();
+    let savedRun = null;
+    let restoreHiddenAnswers = [];
+    let restoreExtraTryArmed = false;
     try {
       nicknameInput.value = localStorage.getItem(SAVED_NICKNAME_KEY) || "";
       playerNickname = nicknameInput.value.trim().replace(/\s+/g, " ");
     } catch {
       nicknameInput.value = "";
     }
+    savedRun = readSavedRun();
     function updateStartCopy() {
       const prompt = "Gib deinen Nickname ein, um zu starten. ";
       const rest = "Es gibt 100 verschiedene Fragen. Jede Stufe hat 10 Fragen und kann unbegrenzt oft gespielt werden.";
@@ -1181,6 +1204,41 @@
       }
     }
 
+    function readSavedRun() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SAVED_RUN_KEY) || "null");
+        if (!saved || typeof saved.nickname !== "string" || !Number.isInteger(saved.stageIndex)
+          || saved.stageIndex < 0 || saved.stageIndex > dailyProgress.completedStages
+          || !Number.isInteger(saved.questionIndex) || saved.questionIndex < 0 || saved.questionIndex >= questions.length
+          || !Number.isInteger(saved.score) || saved.score < 0 || saved.score > QUESTIONS_PER_STAGE
+          || !Array.isArray(saved.questions) || saved.questions.length !== questions.length) return null;
+        const stageStart = (saved.stageIndex * QUESTIONS_PER_STAGE) % questions.length;
+        const questionOffset = (saved.questionIndex - stageStart + questions.length) % questions.length;
+        if (questionOffset >= QUESTIONS_PER_STAGE) return null;
+        if (!saved.questions.every(question => question && typeof question.prompt === "string"
+          && Array.isArray(question.answers) && Number.isInteger(question.correct)
+          && question.correct >= 0 && question.correct < question.answers.length)) return null;
+        return {
+          ...saved,
+          jokerUsesRemaining: {
+            half: saved.jokerUsesRemaining?.half === 0 ? 0 : 1,
+            retry: saved.jokerUsesRemaining?.retry === 0 ? 0 : 1
+          },
+          extraTryArmed: Boolean(saved.extraTryArmed),
+          hiddenAnswers: Array.isArray(saved.hiddenAnswers)
+            ? saved.hiddenAnswers.filter(index => Number.isInteger(index) && index >= 0 && index < saved.questions[saved.questionIndex].answers.length)
+            : []
+        };
+      } catch {
+        return null;
+      }
+    }
+
+    function clearSavedRun() {
+      savedRun = null;
+      try { localStorage.removeItem(SAVED_RUN_KEY); } catch { /* Current game can continue without storage. */ }
+    }
+
     function getPlayableStageIndex() {
       return dailyProgress.completedStages;
     }
@@ -1205,6 +1263,7 @@
       if (!window.confirm("Möchtest du wirklich deinen Fortschritt und deine Gesamtpunktzahl zurücksetzen?")) return;
       dailyProgress = { completedStages: 0, totalCorrect: 0, stageScores: [], lastCompletedDate: "" };
       saveDailyProgress();
+      clearSavedRun();
       updateDailyStageStatus();
       dailyStageStatus.textContent = "Dein Fortschritt wurde auf Stufe 1 zurückgesetzt.";
     });
@@ -1259,13 +1318,23 @@
       startView.hidden = true;
       resultView.hidden = true;
       quizView.hidden = false;
-      activeStageIndex = stageToPlayOverride === null ? getPlayableStageIndex() : stageToPlayOverride;
+      const canResumeSavedRun = stageToPlayOverride === null
+        && savedRun
+        && savedRun.nickname.toLocaleLowerCase() === playerNickname.toLocaleLowerCase();
+      activeStageIndex = canResumeSavedRun ? savedRun.stageIndex
+        : stageToPlayOverride === null ? getPlayableStageIndex() : stageToPlayOverride;
       stageToPlayOverride = null;
-      currentQuestion = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
-      score = 0;
-      Object.keys(jokerUsesRemaining).forEach(type => { jokerUsesRemaining[type] = 1; });
-      extraTryArmed = false;
-      questions = createQuestions();
+      currentQuestion = canResumeSavedRun ? savedRun.questionIndex : (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
+      score = canResumeSavedRun ? savedRun.score : 0;
+      Object.keys(jokerUsesRemaining).forEach(type => {
+        jokerUsesRemaining[type] = canResumeSavedRun ? savedRun.jokerUsesRemaining[type] : 1;
+      });
+      extraTryArmed = canResumeSavedRun && savedRun.extraTryArmed;
+      restoreExtraTryArmed = extraTryArmed;
+      restoreHiddenAnswers = canResumeSavedRun ? savedRun.hiddenAnswers : [];
+      questions = canResumeSavedRun ? savedRun.questions : createQuestions();
+      if (!canResumeSavedRun) clearSavedRun();
+      savedRun = null;
       updateJokerControls();
       renderQuestion();
     });
@@ -1552,9 +1621,32 @@
         button.querySelector(".joker-use-count").textContent = String(remainingUses);
         button.disabled = !photoLoaded || answered || remainingUses === 0;
       });
+      saveProgressButton.disabled = answered;
       const totalRemaining = Object.values(jokerUsesRemaining).reduce((sum, remaining) => sum + remaining, 0);
       jokerRemaining.textContent = `${totalRemaining} Joker übrig`;
     }
+
+    saveProgressButton.addEventListener("click", () => {
+      if (answered) return;
+      const hiddenAnswers = [...answersElement.children]
+        .map((button, index) => button.hidden ? index : -1)
+        .filter(index => index >= 0);
+      try {
+        localStorage.setItem(SAVED_RUN_KEY, JSON.stringify({
+          nickname: playerNickname,
+          stageIndex: activeStageIndex,
+          questionIndex: currentQuestion,
+          score,
+          jokerUsesRemaining,
+          extraTryArmed,
+          hiddenAnswers,
+          questions
+        }));
+        feedback.textContent = `Spielstand gespeichert. Du kannst später in Stufe ${activeStageIndex + 1} weiterspielen.`;
+      } catch {
+        feedback.textContent = "Spielstand konnte in diesem Browser nicht gespeichert werden.";
+      }
+    });
 
     function useJoker(type) {
       if (!photoLoaded || answered || jokerUsesRemaining[type] === 0) return;
@@ -1652,7 +1744,8 @@
       answered = false;
       gameOverPending = false;
       photoLoaded = false;
-      extraTryArmed = false;
+      extraTryArmed = restoreExtraTryArmed;
+      restoreExtraTryArmed = false;
       progressLabel.textContent = `Stufe ${stageNumber} · Frage ${questionInStage} von ${QUESTIONS_PER_STAGE}`;
       scoreLabel.textContent = `${score} richtig`;
       progressTrack.setAttribute("aria-valuenow", String(currentQuestion % questions.length));
@@ -1700,6 +1793,10 @@
         button.addEventListener("click", () => chooseAnswer(index));
         return button;
       }));
+      restoreHiddenAnswers.forEach(index => {
+        if (answersElement.children[index]) answersElement.children[index].hidden = true;
+      });
+      restoreHiddenAnswers = [];
       questionText.focus({ preventScroll: true });
       updateJokerControls();
       loadQuestionImage(question, currentQuestion);
@@ -1761,6 +1858,7 @@
           saveDailyProgress();
           updateDailyStageStatus();
         }
+        clearSavedRun();
         showResult();
         return;
       }
@@ -1784,6 +1882,7 @@
 
     function showGameOver() {
       recordStageScore();
+      clearSavedRun();
       quizView.hidden = true;
       resultView.hidden = false;
       document.querySelector("#continue-button").hidden = true;
@@ -1814,12 +1913,14 @@
     });
 
     document.querySelector("#continue-button").addEventListener("click", () => {
+      clearSavedRun();
       stageToPlayOverride = getPlayableStageIndex();
       nicknameInput.value = playerNickname;
       startForm.requestSubmit();
     });
 
     document.querySelector("#restart-button").addEventListener("click", () => {
+      clearSavedRun();
       stageToPlayOverride = activeStageIndex;
       nicknameInput.value = playerNickname;
       startForm.requestSubmit();
