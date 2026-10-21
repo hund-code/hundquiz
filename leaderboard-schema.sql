@@ -40,6 +40,19 @@ create policy "Public can submit quiz scores"
     and score >= 0
   );
 
+drop policy if exists "Public can update quiz scores" on public.quiz_scores;
+create policy "Public can update quiz scores"
+  on public.quiz_scores
+  for update
+  to anon, authenticated
+  using (true)
+  with check (
+    nickname = btrim(nickname)
+    and char_length(nickname) between 2 and 16
+    and score >= 0
+  );
+
 revoke update, delete on public.quiz_scores from anon, authenticated;
 grant select, insert on public.quiz_scores to anon, authenticated;
+grant update (score) on public.quiz_scores to anon, authenticated;
 grant usage, select on sequence public.quiz_scores_id_seq to anon, authenticated;

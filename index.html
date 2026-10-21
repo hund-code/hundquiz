@@ -85,6 +85,7 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
+
     .topbar-rank {
       display: inline-flex;
       min-height: 40px;
@@ -311,6 +312,8 @@
     .start-view h2 { margin-bottom: 8px; }
     .start-copy { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.55; }
     .daily-stage-status { min-height: 18px; margin: -8px 0 14px; color: var(--green-dark); font-size: 12px; }
+    .reset-progress-button { margin: -8px 0 14px; padding: 4px 0; border: 0; color: var(--muted); background: transparent; font-size: 11px; text-decoration: underline; cursor: pointer; }
+    .reset-progress-button:hover { color: var(--green-dark); }
     .start-form { max-width: 420px; }
     .start-form label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; }
     .start-form .score-entry { grid-template-columns: minmax(0, 1fr) auto; }
@@ -598,8 +601,6 @@
       filter: drop-shadow(0 2px 2px rgb(36 52 45 / 18%));
     }
 
-    .score-form { margin-bottom: 10px; }
-    .score-form label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; }
     .score-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 
     .nickname-input {
@@ -741,8 +742,7 @@
       <button class="topbar-rank" id="leaderboard-open" type="button" aria-label="Rangliste öffnen" title="Rangliste öffnen">
         <span class="rank-icon" aria-hidden="true">🏆</span><span class="rank-label">Rangliste</span>
       </button>
-      <a class="topbar-qr" id="quiz-qr-link" href="https://hund-code.github.io/hundquiz/" target="_blank" rel="noopener" aria-label="Quiz auf dem Handy öffnen, QR-Code scannen" title="QR-Code zum Quiz">
-        <img class="qr-code" id="quiz-qr-code" alt="QR-Code zum öffentlichen Hundequiz" width="220" height="220">
+      <a class="topbar-qr" id="quiz-qr-link" href="./" target="_blank" rel="noopener" aria-label="Quiz auf dem Handy öffnen, QR-Code scannen" title="QR-Code zum Quiz">
       </a>
     </header>
 
@@ -763,8 +763,9 @@
         <section class="start-view" id="start-view" aria-labelledby="start-title">
           <p class="question-count">Willkommen</p>
           <h2 id="start-title">Hundequiz</h2>
-          <p class="start-copy">Gib deinen Nickname ein, um zu starten. Es gibt 100 verschiedene Fragen. Die Stufen mit je zwei Fragen kannst du unbegrenzt spielen.</p>
+          <p class="start-copy" id="start-copy">Gib deinen Nickname ein, um zu starten. Es gibt 100 verschiedene Fragen. Jede Stufe hat 10 Fragen und kann unbegrenzt oft gespielt werden.</p>
           <p class="daily-stage-status" id="daily-stage-status" role="status" aria-live="polite"></p>
+          <button class="reset-progress-button" id="reset-progress-button" type="button" hidden>Fortschritt auf Stufe 1 zurücksetzen</button>
           <form class="start-form" id="start-form">
             <label for="nickname">Dein Nickname (2 bis 16 Zeichen, öffentlich sichtbar)</label>
             <div class="score-entry">
@@ -778,7 +779,7 @@
             <span id="progress-label">Frage 1 von 100</span>
             <div class="quiz-status">
               <span class="score-chip" id="score-label">0 richtig</span>
-              <span class="joker-remaining" id="joker-remaining">5 Joker übrig</span>
+              <span class="joker-remaining" id="joker-remaining">2 Joker übrig</span>
             </div>
           </div>
           <div class="progress-track" role="progressbar" aria-label="Quizfortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -790,10 +791,8 @@
           <div class="feedback" id="feedback" aria-live="polite"></div>
           <div class="quiz-footer">
             <div class="joker-actions" role="group" aria-label="Joker">
-              <button class="joker-button" type="button" data-joker="half" aria-label="50:50: zwei falsche Antworten ausblenden" title="50:50: Zwei falsche Antworten ausblenden" disabled>50:50<span class="joker-use-count" aria-hidden="true">2</span></button>
-              <button class="joker-button" type="button" data-joker="hint" aria-label="Hinweis mit den Anfangsbuchstaben anzeigen" title="Hinweis: Anfangsbuchstaben zeigen" disabled>?<span class="joker-use-count" aria-hidden="true">2</span></button>
-              <button class="joker-button" type="button" data-joker="skip" aria-label="Frage überspringen" title="Frage überspringen" disabled>»<span class="joker-use-count" aria-hidden="true">2</span></button>
-              <button class="joker-button" type="button" data-joker="retry" aria-label="Einen Extra-Versuch erhalten" title="Extra-Versuch: noch einmal raten" disabled>+1<span class="joker-use-count" aria-hidden="true">2</span></button>
+              <button class="joker-button" type="button" data-joker="half" aria-label="50:50: zwei falsche Antworten ausblenden" title="50:50: Zwei falsche Antworten ausblenden" disabled>50:50<span class="joker-use-count" aria-hidden="true">1</span></button>
+              <button class="joker-button" type="button" data-joker="retry" aria-label="Einen Extra-Versuch erhalten" title="+1: noch einmal raten" disabled>+1<span class="joker-use-count" aria-hidden="true">1</span></button>
             </div>
             <button class="next-button" id="next-button" type="button" disabled>Weiter <span aria-hidden="true">→</span></button>
           </div>
@@ -806,9 +805,6 @@
           <p class="score-player">Eintrag als <strong id="leaderboard-player"></strong></p>
           <section class="leaderboard" aria-labelledby="leaderboard-title">
             <h3 id="leaderboard-title"><svg class="leaderboard-trophy" viewBox="0 0 64 64" aria-hidden="true"><path fill="#d89b35" d="M18 8h28v13c0 12-5 19-14 22-9-3-14-10-14-22V8Z"/><path fill="#f2c45e" d="M23 13h18v9c0 8-3 13-9 16-6-3-9-8-9-16v-9Z"/><path fill="none" stroke="#d89b35" stroke-linecap="round" stroke-width="6" d="M18 16H9v6c0 8 5 13 14 14M46 16h9v6c0 8-5 13-14 14"/><path fill="#315d49" d="M28 42h8v9h9v6H19v-6h9z"/></svg><span class="leaderboard-title-text">Top 10 weltweit</span></h3>
-            <form class="score-form" id="score-form">
-              <button class="score-submit" id="score-submit" type="submit" disabled>Punktzahl eintragen</button>
-            </form>
             <p class="leaderboard-status" id="leaderboard-status" role="status" aria-live="polite"></p>
             <div class="leaderboard-table-wrap">
               <table>
@@ -818,6 +814,7 @@
               </table>
             </div>
           </section>
+          <button class="restart-button" id="continue-button" type="button" hidden>Weiter zur nächsten Stufe <span aria-hidden="true">→</span></button>
           <button class="restart-button" id="restart-button" type="button">Nochmal spielen <span aria-hidden="true">↻</span></button>
         </section>
       </section>
@@ -1111,7 +1108,6 @@
     const questionText = document.querySelector("#question-text");
     const dogPhoto = document.querySelector("#dog-photo");
     const quizQrLink = document.querySelector("#quiz-qr-link");
-    const quizQrCode = document.querySelector("#quiz-qr-code");
     const photoTrigger = document.querySelector("#photo-trigger");
     const photoStatus = document.querySelector("#photo-status");
     const photoDialog = document.querySelector("#photo-dialog");
@@ -1120,18 +1116,17 @@
     const feedback = document.querySelector("#feedback");
     const nextButton = document.querySelector("#next-button");
     const jokerRemaining = document.querySelector("#joker-remaining");
-    const scoreForm = document.querySelector("#score-form");
-    const scoreSubmit = document.querySelector("#score-submit");
     const leaderboardRows = document.querySelector("#leaderboard-rows");
     const leaderboardStatus = document.querySelector("#leaderboard-status");
     const leaderboardConfig = window.QUIZ_LEADERBOARD_CONFIG || {};
     const jokerButtons = [...document.querySelectorAll("[data-joker]")];
-    const QUESTIONS_PER_STAGE = 2;
+    const QUESTIONS_PER_STAGE = 10;
+    const SAVED_STAGE_SIZE_KEY = "pfotenwissen-stage-size-v1";
     const DAILY_PROGRESS_KEY = "pfotenwissen-daily-progress-v1";
     const LOCAL_LEADERBOARD_KEY = "pfotenwissen-local-leaderboard-v1";
-    const LOCAL_LEADERBOARD_CLEANUP_KEY = "pfotenwissen-cleaned-lumpi-entries-v1";
     const SAVED_NICKNAME_KEY = "pfotenwissen-nickname-v1";
     let activeStageIndex = 0;
+    let stageToPlayOverride = null;
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
@@ -1139,16 +1134,24 @@
     let photoLoaded = false;
     let playerNickname = "";
     const startButton = startForm.querySelector('button[type="submit"]');
+    const startCopy = document.querySelector("#start-copy");
+    const resetProgressButton = document.querySelector("#reset-progress-button");
     const dailyStageStatus = document.querySelector("#daily-stage-status");
     let dailyProgress = readDailyProgress();
     try {
       nicknameInput.value = localStorage.getItem(SAVED_NICKNAME_KEY) || "";
+      playerNickname = nicknameInput.value.trim().replace(/\s+/g, " ");
     } catch {
       nicknameInput.value = "";
     }
-    const jokerUsesRemaining = { half: 2, hint: 2, skip: 2, retry: 2 };
+    function updateStartCopy() {
+      const prompt = "Gib deinen Nickname ein, um zu starten. ";
+      const rest = "Es gibt 100 verschiedene Fragen. Jede Stufe hat 10 Fragen und kann unbegrenzt oft gespielt werden.";
+      startCopy.textContent = nicknameInput.value.trim() ? rest : prompt + rest;
+    }
+    updateStartCopy();
+    const jokerUsesRemaining = { half: 1, retry: 1 };
     let extraTryArmed = false;
-    const usedJokersThisQuestion = new Set();
 
     function todayKey() {
       const date = new Date();
@@ -1161,13 +1164,20 @@
     function readDailyProgress() {
       try {
         const saved = JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY) || "{}");
+        const previousStageSize = Math.max(1, Math.floor(Number(localStorage.getItem(SAVED_STAGE_SIZE_KEY)) || 2));
+        const previousCompletedStages = Math.max(0, Math.floor(Number(saved.completedStages) || 0));
+        const completedStages = Math.floor((previousCompletedStages * previousStageSize) / QUESTIONS_PER_STAGE);
+        localStorage.setItem(SAVED_STAGE_SIZE_KEY, String(QUESTIONS_PER_STAGE));
         return {
-          completedStages: Math.min(Math.floor(Number.MAX_SAFE_INTEGER / QUESTIONS_PER_STAGE), Math.max(0, Math.floor(Number(saved.completedStages) || 0))),
+          completedStages: Math.min(Math.floor(Number.MAX_SAFE_INTEGER / QUESTIONS_PER_STAGE), completedStages),
           totalCorrect: Math.min(2147483647, Math.max(0, Math.floor(Number(saved.totalCorrect) || 0))),
+          stageScores: Array.isArray(saved.stageScores)
+            ? saved.stageScores.map(value => Math.min(QUESTIONS_PER_STAGE, Math.max(0, Math.floor(Number(value) || 0))))
+            : [],
           lastCompletedDate: typeof saved.lastCompletedDate === "string" ? saved.lastCompletedDate : ""
         };
       } catch {
-        return { completedStages: 0, totalCorrect: 0, lastCompletedDate: "" };
+        return { completedStages: 0, totalCorrect: 0, stageScores: [], lastCompletedDate: "" };
       }
     }
 
@@ -1178,18 +1188,30 @@
     function updateDailyStageStatus() {
       dailyStageStatus.textContent = `Stufe ${dailyProgress.completedStages + 1} ist bereit. Du kannst unbegrenzt weiterspielen.`;
       startButton.disabled = false;
+      resetProgressButton.hidden = dailyProgress.completedStages === 0 && dailyProgress.totalCorrect === 0;
     }
 
     function saveDailyProgress() {
       try {
         localStorage.setItem(DAILY_PROGRESS_KEY, JSON.stringify(dailyProgress));
+        localStorage.setItem(SAVED_STAGE_SIZE_KEY, String(QUESTIONS_PER_STAGE));
       } catch {
         dailyStageStatus.textContent = "Der Tagesfortschritt kann in diesem Browser nicht gespeichert werden.";
       }
     }
 
     updateDailyStageStatus();
-    nicknameInput.addEventListener("input", () => nicknameInput.setCustomValidity(""));
+    resetProgressButton.addEventListener("click", () => {
+      if (!window.confirm("Möchtest du wirklich deinen Fortschritt und deine Gesamtpunktzahl zurücksetzen?")) return;
+      dailyProgress = { completedStages: 0, totalCorrect: 0, stageScores: [], lastCompletedDate: "" };
+      saveDailyProgress();
+      updateDailyStageStatus();
+      dailyStageStatus.textContent = "Dein Fortschritt wurde auf Stufe 1 zurückgesetzt.";
+    });
+    nicknameInput.addEventListener("input", () => {
+      nicknameInput.setCustomValidity("");
+      updateStartCopy();
+    });
 
     startForm.addEventListener("submit", async event => {
       event.preventDefault();
@@ -1203,24 +1225,30 @@
       nicknameInput.setCustomValidity("");
       startButton.disabled = true;
       nicknameInput.disabled = true;
-      dailyStageStatus.textContent = "Prüfe, ob der Nickname noch frei ist …";
-      let nicknameAvailable;
-      try {
-        nicknameAvailable = await isNicknameAvailable(nickname);
-      } catch {
-        dailyStageStatus.textContent = "Der Nickname konnte gerade nicht geprüft werden. Bitte versuche es erneut.";
-        return;
-      } finally {
-        startButton.disabled = false;
-        nicknameInput.disabled = false;
-      }
-      if (!nicknameAvailable) {
-        nicknameInput.setCustomValidity("Dieser Nickname ist schon vergeben. Bitte wähle einen anderen.");
-        nicknameInput.reportValidity();
-        dailyStageStatus.textContent = "Dieser Nickname ist schon vergeben. Bitte wähle einen anderen.";
-        return;
+      const isRememberedNickname = nickname.toLocaleLowerCase() === playerNickname.toLocaleLowerCase();
+      if (!isRememberedNickname) {
+        dailyStageStatus.textContent = "Prüfe, ob der Nickname noch frei ist …";
+        let nicknameAvailable;
+        try {
+          nicknameAvailable = await isNicknameAvailable(nickname);
+        } catch {
+          dailyStageStatus.textContent = "Der Nickname konnte gerade nicht geprüft werden. Bitte versuche es erneut.";
+          return;
+        } finally {
+          startButton.disabled = false;
+          nicknameInput.disabled = false;
+        }
+        if (!nicknameAvailable) {
+          nicknameInput.setCustomValidity("Dieser Nickname ist schon vergeben. Bitte wähle einen anderen.");
+          nicknameInput.reportValidity();
+          dailyStageStatus.textContent = "Dieser Nickname ist schon vergeben. Bitte wähle einen anderen.";
+          return;
+        }
       }
 
+      startButton.disabled = false;
+      nicknameInput.disabled = false;
+      if (nickname.toLocaleLowerCase() !== playerNickname.toLocaleLowerCase()) automaticScoreChecked = false;
       playerNickname = nickname;
       try {
         localStorage.setItem(SAVED_NICKNAME_KEY, nickname);
@@ -1231,12 +1259,12 @@
       startView.hidden = true;
       resultView.hidden = true;
       quizView.hidden = false;
-      activeStageIndex = getPlayableStageIndex();
+      activeStageIndex = stageToPlayOverride === null ? getPlayableStageIndex() : stageToPlayOverride;
+      stageToPlayOverride = null;
       currentQuestion = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
       score = 0;
-      Object.keys(jokerUsesRemaining).forEach(type => { jokerUsesRemaining[type] = 2; });
+      Object.keys(jokerUsesRemaining).forEach(type => { jokerUsesRemaining[type] = 1; });
       extraTryArmed = false;
-      usedJokersThisQuestion.clear();
       questions = createQuestions();
       updateJokerControls();
       renderQuestion();
@@ -1280,15 +1308,13 @@
       try {
         const entries = JSON.parse(localStorage.getItem(LOCAL_LEADERBOARD_KEY) || "[]");
         if (!Array.isArray(entries)) return [];
-        if (localStorage.getItem(LOCAL_LEADERBOARD_CLEANUP_KEY) !== "done") {
-          const cleanedEntries = entries.filter(entry =>
-            typeof entry.nickname !== "string" || entry.nickname.trim().toLocaleLowerCase() !== "lumpi"
-          );
+        const cleanedEntries = entries.filter(entry =>
+          typeof entry.nickname !== "string" || !["lumpi", "test", "hunde"].includes(entry.nickname.trim().toLocaleLowerCase())
+        );
+        if (cleanedEntries.length !== entries.length) {
           localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(cleanedEntries));
-          localStorage.setItem(LOCAL_LEADERBOARD_CLEANUP_KEY, "done");
-          return cleanedEntries;
         }
-        return entries;
+        return cleanedEntries;
       } catch {
         return [];
       }
@@ -1297,7 +1323,10 @@
     readLocalLeaderboard();
 
     function renderLeaderboard(entries) {
-      const rows = entries.slice(0, 10).map((entry, index) => {
+      const visibleEntries = entries.filter(entry =>
+        typeof entry.nickname !== "string" || !["lumpi", "test", "hunde"].includes(entry.nickname.trim().toLocaleLowerCase())
+      );
+      const rows = visibleEntries.slice(0, 10).map((entry, index) => {
         const row = document.createElement("tr");
         const place = document.createElement("td");
         const nickname = document.createElement("td");
@@ -1312,6 +1341,122 @@
       leaderboardModalRows.replaceChildren(...rows.map(row => row.cloneNode(true)));
     }
 
+    let automaticScoreChecked = false;
+    async function addPlayerToLeaderboardIfNew() {
+      if (!playerNickname || dailyProgress.totalCorrect === 0) return;
+      if (!hasLeaderboardConfig()) {
+        const entries = readLocalLeaderboard();
+        const normalizedNickname = playerNickname.trim().toLocaleLowerCase();
+        const existingIndex = entries.findIndex(entry =>
+          typeof entry.nickname === "string" && entry.nickname.trim().toLocaleLowerCase() === normalizedNickname
+        );
+        if (existingIndex >= 0) {
+          if (Number(entries[existingIndex].score) !== dailyProgress.totalCorrect) {
+            entries[existingIndex].score = dailyProgress.totalCorrect;
+            try {
+              localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(entries));
+              loadLeaderboard();
+              leaderboardStatus.textContent = "Dein Punktestand in der lokalen Rangliste wurde aktualisiert.";
+              leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+            } catch {
+              leaderboardStatus.textContent = "Der Punktestand konnte nicht aktualisiert werden.";
+            }
+          }
+          return;
+        }
+      } else {
+        try {
+          const lookup = new URLSearchParams({ select: "nickname", nickname: `eq.${playerNickname}`, limit: "1" });
+          const lookupResponse = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores?${lookup}`, {
+            headers: leaderboardHeaders()
+          });
+          if (!lookupResponse.ok) throw new Error("Punktestand konnte nicht geladen werden");
+          const [existingEntry] = await lookupResponse.json();
+          if (existingEntry) {
+            const filter = new URLSearchParams({ nickname: `eq.${existingEntry.nickname}` });
+            const updateResponse = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores?${filter}`, {
+              method: "PATCH",
+              headers: {
+                ...leaderboardHeaders(),
+                "Content-Type": "application/json",
+                Prefer: "return=minimal"
+              },
+              body: JSON.stringify({ score: dailyProgress.totalCorrect })
+            });
+            if (!updateResponse.ok) throw new Error("Online-Punktestand konnte nicht aktualisiert werden");
+            await loadLeaderboard();
+            leaderboardStatus.textContent = "Dein Punktestand in der Rangliste wurde aktualisiert.";
+            leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+            return;
+          }
+        } catch {
+          leaderboardStatus.textContent = "Online-Punktestand konnte nicht aktualisiert werden. Bitte führe leaderboard-schema.sql erneut aus.";
+          leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+          return;
+        }
+      }
+      if (automaticScoreChecked) return;
+      automaticScoreChecked = true;
+      try {
+        if (!await isNicknameAvailable(playerNickname)) return;
+        await submitPlayerScore();
+      } catch {
+        automaticScoreChecked = false;
+        leaderboardStatus.textContent = "Punktzahl konnte nicht automatisch eingetragen werden. Bitte versuche es später erneut.";
+        leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+      }
+    }
+
+    async function submitPlayerScore() {
+      if (!playerNickname || dailyProgress.totalCorrect === 0) return;
+      if (!hasLeaderboardConfig()) {
+        const entries = readLocalLeaderboard();
+        const normalizedNickname = playerNickname.trim().toLocaleLowerCase();
+        const existingIndex = entries.findIndex(entry =>
+          typeof entry.nickname === "string" && entry.nickname.trim().toLocaleLowerCase() === normalizedNickname
+        );
+        if (existingIndex >= 0) {
+          entries[existingIndex].score = dailyProgress.totalCorrect;
+        } else {
+          entries.push({ nickname: playerNickname, score: dailyProgress.totalCorrect, created_at: new Date().toISOString() });
+        }
+        try {
+          localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(entries));
+          await loadLeaderboard();
+          leaderboardStatus.textContent = existingIndex >= 0
+            ? "Dein Punktestand in der lokalen Rangliste wurde aktualisiert."
+            : "Punktzahl lokal eingetragen. Nur auf diesem Gerät sichtbar.";
+          leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+        } catch {
+          leaderboardStatus.textContent = "Punktzahl konnte auf diesem Gerät nicht gespeichert werden.";
+          leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+        }
+        return;
+      }
+
+      leaderboardStatus.textContent = "Punktzahl wird eingetragen …";
+      leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+      try {
+        const response = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores`, {
+          method: "POST",
+          headers: { ...leaderboardHeaders(), "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ nickname: playerNickname, score: dailyProgress.totalCorrect })
+        });
+        if (response.status === 409) {
+          leaderboardStatus.textContent = "Dieser Nickname wurde gerade von jemand anderem vergeben.";
+        } else if (!response.ok) {
+          throw new Error("Punktzahl konnte nicht gespeichert werden");
+        } else {
+          await loadLeaderboard();
+          leaderboardStatus.textContent = "Punktzahl eingetragen.";
+        }
+        leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+      } catch {
+        leaderboardStatus.textContent = "Punktzahl konnte nicht gespeichert werden.";
+        leaderboardModalStatus.textContent = leaderboardStatus.textContent;
+      }
+    }
+
     function showLocalLeaderboard() {
       const entries = readLocalLeaderboard().sort((a, b) =>
         Number(b.score) - Number(a.score) || String(a.created_at).localeCompare(String(b.created_at))
@@ -1324,7 +1469,6 @@
         : "Noch keine Punktzahlen. Lokale Rangliste: nur auf diesem Gerät sichtbar.";
       leaderboardStatus.textContent = status;
       leaderboardModalStatus.textContent = status;
-      scoreSubmit.disabled = !playerNickname;
     }
 
     async function loadLeaderboard() {
@@ -1336,7 +1480,7 @@
       leaderboardStatus.textContent = "Rangliste wird geladen …";
       leaderboardModalStatus.textContent = "Rangliste wird geladen …";
       try {
-        const query = "select=nickname,score,created_at&order=score.desc,created_at.asc&limit=10";
+        const query = "select=nickname,score,created_at&order=score.desc,created_at.asc&limit=1000";
         const response = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores?${query}`, {
           headers: leaderboardHeaders()
         });
@@ -1347,7 +1491,6 @@
         document.querySelector("#leaderboard-dialog-title .leaderboard-title-text").textContent = "Top 10 weltweit";
         leaderboardStatus.textContent = entries.length ? "" : "Noch keine Punktzahlen eingetragen.";
         leaderboardModalStatus.textContent = entries.length ? "" : "Noch keine Punktzahlen eingetragen.";
-        scoreSubmit.disabled = false;
       } catch {
         showLocalLeaderboard();
         leaderboardStatus.textContent = "Online-Rangliste nicht erreichbar. Es wird die lokale Rangliste dieses Geräts angezeigt.";
@@ -1355,67 +1498,25 @@
       }
     }
 
-    scoreForm.addEventListener("submit", async event => {
-      event.preventDefault();
-      if (!hasLeaderboardConfig()) {
-        const entries = readLocalLeaderboard();
-        const normalizedNickname = playerNickname.trim().toLocaleLowerCase();
-        if (entries.some(entry => entry.nickname.trim().toLocaleLowerCase() === normalizedNickname)) {
-          leaderboardStatus.textContent = "Dieser Nickname ist schon in der Rangliste vergeben.";
-          return;
-        }
-        entries.push({
-          nickname: playerNickname,
-          score: dailyProgress.totalCorrect,
-          created_at: new Date().toISOString()
-        });
-        try {
-          localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(entries));
-          loadLeaderboard();
-          leaderboardStatus.textContent = "Punktzahl lokal eingetragen. Nur auf diesem Gerät sichtbar.";
-          leaderboardModalStatus.textContent = leaderboardStatus.textContent;
-        } catch {
-          leaderboardStatus.textContent = "Punktzahl konnte auf diesem Gerät nicht gespeichert werden.";
-        }
-        return;
-      }
-      scoreSubmit.disabled = true;
-      leaderboardStatus.textContent = "Punktzahl wird eingetragen …";
-      try {
-        const response = await fetch(`${leaderboardConfig.url}/rest/v1/quiz_scores`, {
-          method: "POST",
-          headers: {
-            ...leaderboardHeaders(),
-            "Content-Type": "application/json",
-            Prefer: "return=minimal"
-          },
-          body: JSON.stringify({ nickname: playerNickname, score: dailyProgress.totalCorrect })
-        });
-        if (response.status === 409) {
-          leaderboardStatus.textContent = "Dieser Nickname wurde gerade von jemand anderem vergeben.";
-          scoreSubmit.disabled = false;
-          return;
-        }
-        if (!response.ok) throw new Error("Punktzahl konnte nicht gespeichert werden");
-        leaderboardStatus.textContent = "Punktzahl eingetragen.";
-        await loadLeaderboard();
-      } catch {
-        leaderboardStatus.textContent = "Punktzahl konnte nicht gespeichert werden. Versuch es erneut.";
-        scoreSubmit.disabled = false;
-      }
-    });
-
-    const publicQuizUrl = "https://hund-code.github.io/hundquiz/";
+    const localPreviewHosts = ["localhost", "127.0.0.1", "::1"];
+    const isLocalPreview = window.location.protocol === "file:" || localPreviewHosts.includes(window.location.hostname);
+    const publicQuizUrl = isLocalPreview
+      ? "https://hund-code.github.io/hundquiz/"
+      : new URL(".", window.location.href).href;
     quizQrLink.href = publicQuizUrl;
-    quizQrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(publicQuizUrl)}`;
-
-    scoreForm.addEventListener("submit", event => {
-      if (!playerNickname) {
-        event.preventDefault();
-        leaderboardStatus.textContent = "Bitte starte das Quiz zuerst mit einem Nickname.";
-        return;
-      }
-    }, { capture: true });
+    const freshQuizQr = document.createElement("img");
+    freshQuizQr.className = "qr-code";
+    freshQuizQr.id = "quiz-qr-code";
+    freshQuizQr.alt = "QR-Code zum Hundequiz";
+    freshQuizQr.width = 220;
+    freshQuizQr.height = 220;
+    const qrImageUrl = new URL("https://api.qrserver.com/v1/create-qr-code/");
+    qrImageUrl.searchParams.set("size", "220x220");
+    qrImageUrl.searchParams.set("margin", "8");
+    qrImageUrl.searchParams.set("data", publicQuizUrl);
+    qrImageUrl.searchParams.set("refresh", String(Date.now()));
+    freshQuizQr.src = qrImageUrl.href;
+    quizQrLink.replaceChildren(freshQuizQr);
 
     photoTrigger.addEventListener("click", () => {
       fullscreenPhoto.src = dogPhoto.currentSrc || dogPhoto.src;
@@ -1429,11 +1530,12 @@
     });
     photoDialog.addEventListener("close", () => photoTrigger.focus({ preventScroll: true }));
 
+    document.querySelector("#leaderboard-close").addEventListener("click", () => leaderboardDialog.close());
     leaderboardOpen.addEventListener("click", () => {
       leaderboardDialog.showModal();
       loadLeaderboard();
+      addPlayerToLeaderboardIfNew();
     });
-    document.querySelector("#leaderboard-close").addEventListener("click", () => leaderboardDialog.close());
     leaderboardDialog.addEventListener("click", event => {
       if (event.target === leaderboardDialog) leaderboardDialog.close();
     });
@@ -1448,15 +1550,14 @@
         const remainingUses = jokerUsesRemaining[button.dataset.joker];
         button.dataset.uses = String(remainingUses);
         button.querySelector(".joker-use-count").textContent = String(remainingUses);
-        button.disabled = !photoLoaded || answered || usedJokersThisQuestion.has(button.dataset.joker) || remainingUses === 0;
+        button.disabled = !photoLoaded || answered || remainingUses === 0;
       });
       const totalRemaining = Object.values(jokerUsesRemaining).reduce((sum, remaining) => sum + remaining, 0);
       jokerRemaining.textContent = `${totalRemaining} Joker übrig`;
     }
 
     function useJoker(type) {
-      if (!photoLoaded || answered || usedJokersThisQuestion.has(type) || jokerUsesRemaining[type] === 0) return;
-      usedJokersThisQuestion.add(type);
+      if (!photoLoaded || answered || jokerUsesRemaining[type] === 0) return;
       jokerUsesRemaining[type] -= 1;
       const question = questions[currentQuestion % questions.length];
 
@@ -1464,14 +1565,6 @@
         const wrongAnswers = [...answersElement.children].filter((button, index) => index !== question.correct && !button.hidden);
         shuffle(wrongAnswers).slice(0, 2).forEach(button => { button.hidden = true; });
         feedback.textContent = "50:50: Zwei falsche Antworten wurden ausgeblendet.";
-      } else if (type === "hint") {
-        const initials = question.breed.split(/[\s-]+/).map(word => word[0]).join(" · ");
-        feedback.textContent = `Hinweis: Die Anfangsbuchstaben lauten ${initials}.`;
-      } else if (type === "skip") {
-        feedback.textContent = "Frage übersprungen.";
-        updateJokerControls();
-        advanceQuestion();
-        return;
       } else if (type === "retry") {
         extraTryArmed = true;
         feedback.textContent = "Extra-Versuch aktiv: Bei einer falschen Antwort darfst du noch einmal raten.";
@@ -1560,7 +1653,6 @@
       gameOverPending = false;
       photoLoaded = false;
       extraTryArmed = false;
-      usedJokersThisQuestion.clear();
       progressLabel.textContent = `Stufe ${stageNumber} · Frage ${questionInStage} von ${QUESTIONS_PER_STAGE}`;
       scoreLabel.textContent = `${score} richtig`;
       progressTrack.setAttribute("aria-valuenow", String(currentQuestion % questions.length));
@@ -1663,8 +1755,8 @@
     function advanceQuestion() {
       if ((currentQuestion + 1) % QUESTIONS_PER_STAGE === 0) {
         if (activeStageIndex === dailyProgress.completedStages) {
+          recordStageScore();
           dailyProgress.completedStages += 1;
-          dailyProgress.totalCorrect = Math.min(2147483647, dailyProgress.totalCorrect + score);
           dailyProgress.lastCompletedDate = todayKey();
           saveDailyProgress();
           updateDailyStageStatus();
@@ -1679,24 +1771,37 @@
     function showResult() {
       quizView.hidden = true;
       resultView.hidden = false;
+      document.querySelector("#continue-button").hidden = false;
       document.querySelector("#result-score").textContent = `${score}/${QUESTIONS_PER_STAGE}`;
       const title = document.querySelector("#result-title");
       const copy = document.querySelector("#result-copy");
       title.textContent = `Stufe ${activeStageIndex + 1} geschafft!`;
       copy.textContent = `Du hast ${score} von ${QUESTIONS_PER_STAGE} Fragen richtig. Stufe ${dailyProgress.completedStages + 1} ist bereit; du kannst direkt weiterspielen.`;
       loadLeaderboard();
+      addPlayerToLeaderboardIfNew();
       title.focus({ preventScroll: true });
     }
 
     function showGameOver() {
+      recordStageScore();
       quizView.hidden = true;
       resultView.hidden = false;
+      document.querySelector("#continue-button").hidden = true;
       document.querySelector("#result-score").textContent = `${score}/${QUESTIONS_PER_STAGE}`;
       const title = document.querySelector("#result-title");
       title.textContent = `Richtig ist: ${questions[currentQuestion % questions.length].breed}`;
       document.querySelector("#result-copy").textContent = `Diese Stufe hast du nicht geschafft. Du kannst sie jederzeit noch einmal versuchen.`;
       loadLeaderboard();
+      addPlayerToLeaderboardIfNew();
       title.focus({ preventScroll: true });
+    }
+
+    function recordStageScore() {
+      const previousBest = dailyProgress.stageScores[activeStageIndex] || 0;
+      if (score <= previousBest) return;
+      dailyProgress.stageScores[activeStageIndex] = score;
+      dailyProgress.totalCorrect = Math.min(2147483647, dailyProgress.totalCorrect + score - previousBest);
+      saveDailyProgress();
     }
 
     nextButton.addEventListener("click", () => {
@@ -1708,27 +1813,26 @@
       advanceQuestion();
     });
 
-    document.querySelector("#restart-button").addEventListener("click", () => {
-      activeStageIndex = getPlayableStageIndex();
-      currentQuestion = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
-      score = 0;
-      Object.keys(jokerUsesRemaining).forEach(type => { jokerUsesRemaining[type] = 2; });
-      extraTryArmed = false;
-      usedJokersThisQuestion.clear();
-      questions = createQuestions();
-      resultView.hidden = true;
-      quizView.hidden = true;
-      startView.hidden = false;
+    document.querySelector("#continue-button").addEventListener("click", () => {
+      stageToPlayOverride = getPlayableStageIndex();
       nicknameInput.value = playerNickname;
-      updateDailyStageStatus();
-      updateJokerControls();
-      nicknameInput.focus({ preventScroll: true });
+      startForm.requestSubmit();
+    });
+
+    document.querySelector("#restart-button").addEventListener("click", () => {
+      stageToPlayOverride = activeStageIndex;
+      nicknameInput.value = playerNickname;
+      startForm.requestSubmit();
     });
 
     activeStageIndex = getPlayableStageIndex();
     const previewQuestionIndex = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
     currentQuestion = previewQuestionIndex;
-    loadQuestionImage(questions[previewQuestionIndex], previewQuestionIndex);
+    if (playerNickname && nicknameInput.checkValidity()) {
+      startForm.requestSubmit();
+    } else {
+      loadQuestionImage(questions[previewQuestionIndex], previewQuestionIndex);
+    }
   </script>
 </body>
 </html>

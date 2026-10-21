@@ -16,11 +16,11 @@ window.QUIZ_LEADERBOARD_CONFIG = {
 
 5. `leaderboard-config.js`, `index.html` und `leaderboard-schema.sql` committen und nach `master` pushen. GitHub Pages veröffentlicht die Änderungen automatisch.
 
-Es gibt keine Konten. Jeder Nickname darf nur einmal verwendet werden; Groß- und Kleinschreibung zählt dabei nicht. Nickname und Punktzahl erscheinen öffentlich in der Top 10. Anonyme Spieler können Einträge hinzufügen, aber nicht ändern oder löschen.
+Es gibt keine Konten. Jeder Nickname darf nur einmal verwendet werden; Groß- und Kleinschreibung zählt dabei nicht. Nickname und Punktzahl erscheinen öffentlich in der Top 10. Anonyme Spieler können Punktzahlen hinzufügen und ändern, aber keine Einträge löschen.
 
 Der Fortschritt der unbegrenzt vielen Stufen wird lokal im Browser gespeichert und nicht zwischen Geräten synchronisiert. Die Fragen wiederholen sich nach den ersten 100 Fragen.
 
-Beim ersten Laden nach diesem Update werden alte lokale Ranglisteneinträge namens Lumpi einmalig entfernt. Danach kann der Name wieder einmal vergeben werden. Der zuletzt gewählte Nickname wird lokal gespeichert und beim nächsten Besuch vorausgefüllt.
+Beim Laden der lokalen Rangliste werden vorhandene Einträge namens Lumpi aus diesem Browser entfernt und nicht angezeigt. Der Name kann weiterhin neu verwendet werden. Der zuletzt gewählte Nickname wird lokal gespeichert und beim nächsten Besuch vorausgefüllt.
 
 Wenn du die Online-Rangliste schon eingerichtet hast, führe `leaderboard-schema.sql` erneut aus. Das Schema verhindert doppelte Nicknames auch dann, wenn sie sich nur durch Groß- und Kleinschreibung unterscheiden, und erlaubt Gesamtpunktzahlen über 100. Falls es bereits doppelte Nicknames in der Datenbank gibt, muessen diese vor dem Anlegen des eindeutigen Indexes bereinigt werden.
 
