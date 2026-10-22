@@ -779,7 +779,7 @@
         <section class="start-view" id="start-view" aria-labelledby="start-title">
           <p class="question-count">Willkommen</p>
           <h2 id="start-title">Hundequiz</h2>
-          <p class="start-copy" id="start-copy">Gib deinen Nickname ein, um zu starten. Es gibt 100 verschiedene Fragen. Jede Stufe hat 10 Fragen und kann unbegrenzt oft gespielt werden.</p>
+          <p class="start-copy" id="start-copy">Gib deinen Nickname ein, um zu starten. Es gibt 100 verschiedene Fragen und unendlich viele Stufen mit je 10 Fragen.</p>
           <p class="daily-stage-status" id="daily-stage-status" role="status" aria-live="polite"></p>
           <button class="reset-progress-button" id="reset-progress-button" type="button" hidden>Fortschritt auf Stufe 1 zurücksetzen</button>
           <form class="start-form" id="start-form">
@@ -1169,7 +1169,7 @@
     savedRun = readSavedRun();
     function updateStartCopy() {
       const prompt = "Gib deinen Nickname ein, um zu starten. ";
-      const rest = "Es gibt 100 verschiedene Fragen. Jede Stufe hat 10 Fragen und kann unbegrenzt oft gespielt werden.";
+      const rest = `Es gibt ${questions.length} verschiedene Fragen und unendlich viele Stufen mit je ${QUESTIONS_PER_STAGE} Fragen.`;
       startCopy.textContent = nicknameInput.value.trim() ? rest : prompt + rest;
     }
     updateStartCopy();
@@ -1244,7 +1244,7 @@
     }
 
     function updateDailyStageStatus() {
-      dailyStageStatus.textContent = `Stufe ${dailyProgress.completedStages + 1} ist bereit. Du kannst unbegrenzt weiterspielen.`;
+      dailyStageStatus.textContent = `Stufe ${dailyProgress.completedStages + 1} ist bereit. Du kannst unendlich viele Stufen spielen.`;
       startButton.disabled = false;
       resetProgressButton.hidden = dailyProgress.completedStages === 0 && dailyProgress.totalCorrect === 0;
     }
@@ -1270,6 +1270,10 @@
     nicknameInput.addEventListener("input", () => {
       nicknameInput.setCustomValidity("");
       updateStartCopy();
+      const nickname = nicknameInput.value.trim().replace(/\s+/g, " ");
+      if (nickname.length >= 2 && nickname.length <= 16) {
+        try { localStorage.setItem(SAVED_NICKNAME_KEY, nickname); } catch { /* Keep the nickname in the field for this visit. */ }
+      }
     });
 
     startForm.addEventListener("submit", async event => {
@@ -1874,7 +1878,8 @@
       const title = document.querySelector("#result-title");
       const copy = document.querySelector("#result-copy");
       title.textContent = `Stufe ${activeStageIndex + 1} geschafft!`;
-      copy.textContent = `Du hast ${score} von ${QUESTIONS_PER_STAGE} Fragen richtig. Stufe ${dailyProgress.completedStages + 1} ist bereit; du kannst direkt weiterspielen.`;
+      copy.textContent = `Du hast ${score} von ${QUESTIONS_PER_STAGE} Fragen richtig. Stufe ${dailyProgress.completedStages + 1} ist bereit; du kannst unendlich viele Stufen spielen.`;
+      document.querySelector("#continue-button").hidden = false;
       loadLeaderboard();
       addPlayerToLeaderboardIfNew();
       title.focus({ preventScroll: true });
@@ -1929,11 +1934,7 @@
     activeStageIndex = getPlayableStageIndex();
     const previewQuestionIndex = (activeStageIndex * QUESTIONS_PER_STAGE) % questions.length;
     currentQuestion = previewQuestionIndex;
-    if (playerNickname && nicknameInput.checkValidity()) {
-      startForm.requestSubmit();
-    } else {
-      loadQuestionImage(questions[previewQuestionIndex], previewQuestionIndex);
-    }
+    loadQuestionImage(questions[previewQuestionIndex], previewQuestionIndex);
   </script>
 </body>
 </html>
