@@ -106,6 +106,20 @@
     .topbar-rank:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
     .rank-icon { font-size: 17px; line-height: 1; }
 
+    .music-toggle {
+      min-height: 40px;
+      padding: 0 10px;
+      border: 1px solid #cbd4bd;
+      border-radius: 6px;
+      color: var(--green-dark);
+      background: var(--surface);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .music-toggle:hover { background: #edf1e4; }
+    .music-toggle:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+
     main {
       display: grid;
       grid-template-columns: minmax(0, 0.95fr) minmax(380px, 1.05fr);
@@ -716,6 +730,9 @@
 
     @media (max-width: 460px) {
       .level-tag { display: none; }
+      .rank-label { display: none; }
+      .music-toggle { width: 40px; padding: 0; overflow: hidden; font-size: 0; }
+      .music-toggle::before { content: "♫"; font-size: 18px; }
     }
 
     @media (max-width: 340px) {
@@ -755,6 +772,7 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><span>Pfotenwissen</span></div>
       <span class="level-tag">Für Anfänger</span>
+      <button class="music-toggle" id="music-toggle" type="button" aria-pressed="false">♫ Musik an</button>
       <button class="topbar-rank" id="leaderboard-open" type="button" aria-label="Rangliste öffnen" title="Rangliste öffnen">
         <span class="rank-icon" aria-hidden="true">🏆</span><span class="rank-label">Rangliste</span>
       </button>
@@ -1114,6 +1132,7 @@
     const resultView = document.querySelector("#result-view");
     const leaderboardDialog = document.querySelector("#leaderboard-dialog");
     const leaderboardOpen = document.querySelector("#leaderboard-open");
+    const musicToggle = document.querySelector("#music-toggle");
     const leaderboardModalRows = document.querySelector("#leaderboard-modal-rows");
     const leaderboardModalStatus = document.querySelector("#leaderboard-modal-status");
     const leaderboardPlayer = document.querySelector("#leaderboard-player");
@@ -1138,6 +1157,63 @@
     const leaderboardStatus = document.querySelector("#leaderboard-status");
     const leaderboardConfig = window.QUIZ_LEADERBOARD_CONFIG || {};
     const jokerButtons = [...document.querySelectorAll("[data-joker]")];
+    let musicContext = null;
+    let musicTimer = null;
+    let musicStep = 0;
+    const musicChords = [
+      [261.63, 329.63, 392.00],
+      [220.00, 261.63, 329.63],
+      [174.61, 220.00, 261.63],
+      [196.00, 246.94, 293.66]
+    ];
+
+    function playMusicNote(frequency, startAt, duration = 0.72, volume = 0.035) {
+      const oscillator = musicContext.createOscillator();
+      const gain = musicContext.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.035);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+      oscillator.connect(gain);
+      gain.connect(musicContext.destination);
+      oscillator.start(startAt);
+      oscillator.stop(startAt + duration + 0.03);
+    }
+
+    function playMusicBeat() {
+      const chord = musicChords[Math.floor(musicStep / 4) % musicChords.length];
+      const noteIndex = musicStep % 4;
+      const now = musicContext.currentTime;
+      playMusicNote(chord[noteIndex], now, 0.78, 0.025);
+      if (noteIndex === 0) playMusicNote(chord[0] / 2, now, 1.35, 0.012);
+      musicStep += 1;
+    }
+
+    musicToggle.addEventListener("click", async () => {
+      if (musicTimer !== null) {
+        clearInterval(musicTimer);
+        musicTimer = null;
+        await musicContext.suspend();
+        musicToggle.textContent = "♫ Musik an";
+        musicToggle.setAttribute("aria-pressed", "false");
+        return;
+      }
+
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) {
+        musicToggle.textContent = "Musik nicht verfügbar";
+        musicToggle.disabled = true;
+        return;
+      }
+      musicContext ??= new AudioContextClass();
+      await musicContext.resume();
+      musicStep = 0;
+      playMusicBeat();
+      musicTimer = setInterval(playMusicBeat, 520);
+      musicToggle.textContent = "♫ Musik aus";
+      musicToggle.setAttribute("aria-pressed", "true");
+    });
     const QUESTIONS_PER_STAGE = 10;
     const SAVED_STAGE_SIZE_KEY = "pfotenwissen-stage-size-v1";
     const DAILY_PROGRESS_KEY = "pfotenwissen-daily-progress-v1";
